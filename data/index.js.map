@@ -1,0 +1,1 @@
+{"version":3,"file":"bundle.js","sections":[{"offset":{"line":0,"column":0},"map":{"version":3,"file":"a.js","sources":["a.js"],"sourcesContent":["export const a = 1;\n"],"names":[],"mappings":"AAAA"}},{"offset":{"line":1,"column":0},"map":{"version":3,"file":"b.js","sources":["b.js"],"sourcesContent":["export const b = 2;\n"],"names":[],"mappings":"AAAA"}}]}

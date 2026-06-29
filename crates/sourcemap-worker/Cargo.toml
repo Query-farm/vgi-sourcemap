@@ -1,0 +1,30 @@
+[package]
+name = "sourcemap-worker"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "VGI worker that decodes JavaScript Source Map v3 (.map) files and resolves minified positions back to original source locations in DuckDB over Apache Arrow"
+
+[[bin]]
+name = "sourcemap-worker"
+path = "src/main.rs"
+
+[dependencies]
+vgi.workspace = true
+vgi-rpc.workspace = true
+arrow-array.workspace = true
+arrow-buffer.workspace = true
+arrow-schema.workspace = true
+# The Sentry `sourcemap` crate (BSD-3-Clause) does the heavy lifting: Base64-VLQ
+# `mappings` decode, index maps (`sections`), inline `sourcesContent`, and the
+# nearest-preceding `lookup_token` binary search. We never reimplement any of it.
+sourcemap = "9"
+log = "0.4"
+env_logger = "0.11"
+
+[dev-dependencies]
+# Property-based fuzzing that the decoder never panics on arbitrary/truncated input.
+proptest = "1"

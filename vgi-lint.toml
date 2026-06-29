@@ -1,0 +1,17 @@
+# vgi-lint-check configuration for the vgi-sourcemap worker.
+#
+# This worker runs entirely offline: every function decodes a source map passed
+# as inline JSON text (or a path / BLOB), so all of the documented example
+# queries, executable examples, and agent-test tasks bind AND execute without any
+# external backend or network. We therefore keep ALL rules enabled — including
+# the example-execution rules (VGI9xx) — and gate at `info`. The worker scores
+# 100/100.
+#
+# `location` lets you run `vgi-lint` with no arguments from the repo root after a
+# `cargo build --release`; CI passes the same binary via the
+# `Query-farm/vgi-lint-check@v1` action instead.
+[tool.vgi-lint-check]
+location = "target/release/sourcemap-worker"
+select = ["ALL"]
+ignore = []
+fail_on = "info"

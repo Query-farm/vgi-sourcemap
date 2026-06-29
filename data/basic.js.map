@@ -1,0 +1,1 @@
+{"version":3,"file":"app.min.js","sourceRoot":"","sources":["src/index.js"],"sourcesContent":["function greet(name){return 'hi '+name;}\n"],"names":["greet","name"],"mappings":"EAAA,CAACA"}

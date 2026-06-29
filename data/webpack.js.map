@@ -1,0 +1,1 @@
+{"version":3,"file":"main.js","sources":["webpack:///./src/index.js","webpack:///./src/util.js"],"sourcesContent":["import {add} from './util';\nconsole.log(add(1,2));\n","export const add = (a,b) => a + b;\n"],"names":["add","console","log"],"mappings":"AAAA;ACAA"}

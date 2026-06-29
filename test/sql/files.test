@@ -1,0 +1,57 @@
+# name: test/sql/files.test
+# group: [vgi_sourcemap]
+#
+# Path mode and read_text mode over the fixture maps in data/ (staged next to the
+# runner by ci/run-integration.sh). Exercises a basic map by path, an index map
+# (sections) that flattens, and passing raw map text via read_text().
+
+require-env VGI_SOURCEMAP_WORKER
+
+statement ok
+LOAD vgi;
+
+statement ok
+ATTACH 'sourcemap' AS sourcemap (TYPE vgi, LOCATION '${VGI_SOURCEMAP_WORKER}');
+
+statement ok
+SET search_path = 'sourcemap.main';
+
+# Path mode: decode a .map file given its filesystem path.
+query I
+SELECT count(*) FROM tokens('data/basic.js.map');
+----
+2
+
+# Index map (sections) flattens into a combined token list.
+query I
+SELECT n_mappings FROM meta('data/index.js.map');
+----
+2
+
+# Index map resolution crosses sections: line 0 → a.js, line 1 → b.js. The map
+# argument is the path directly — the worker reads the file (no read_text needed,
+# and read_text is a table function in DuckDB, not a scalar).
+query TT
+SELECT (lookup('data/index.js.map', 0, 0)).source,
+       (lookup('data/index.js.map', 1, 0)).source;
+----
+a.js	b.js
+
+# A basic single-file map, resolved by path.
+query T
+SELECT (lookup('data/inline.js.map', 0, 0)).source;
+----
+inline.js
+
+# Inline sourcesContent fetched by source id (the fixture content ends with a
+# newline, trimmed here for a stable comparison).
+query T
+SELECT rtrim(source_content('data/inline.js.map', 0), chr(10));
+----
+export const answer = 42;
+
+statement ok
+USE memory;
+
+statement ok
+DETACH sourcemap;

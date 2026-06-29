@@ -1,0 +1,68 @@
+# name: test/sql/lookup_all.test
+# group: [vgi_sourcemap]
+#
+# The table-in-out bulk entry point: stream a column of minified frames against
+# ONE map and join the resolved rows back to the originating error by the
+# passed-through id. NOTE: no `SET search_path` here — we CREATE a temp table, so
+# unqualified names must resolve to the default catalog, not the read-only worker
+# catalog. The lookup_all call is fully qualified instead.
+
+require-env VGI_SOURCEMAP_WORKER
+
+statement ok
+LOAD vgi;
+
+statement ok
+ATTACH 'sourcemap' AS sourcemap (TYPE vgi, LOCATION '${VGI_SOURCEMAP_WORKER}');
+
+# A column of minified error frames (id, generated line, generated column).
+statement ok
+CREATE TEMP TABLE frames(id INT, line INT, col INT);
+
+statement ok
+INSERT INTO frames VALUES (1, 0, 0), (2, 0, 5), (3, 9, 9);
+
+# Bulk-resolve every frame against one map; the id passes through unchanged.
+query IT
+SELECT r.id, r.source
+FROM sourcemap.main.lookup_all(
+       (SELECT id, line, col FROM frames),
+       map := '{"version":3,"sources":["index.js"],"names":[],"mappings":"AAAA,CAAC"}',
+       id := 'id') AS r
+ORDER BY r.id;
+----
+1	index.js
+2	index.js
+3	index.js
+
+# Join the resolved rows back to the source frames by the passthrough id. Frame 1
+# (0,0) hits the first token (src_col 0); frames 2 (0,5) and 3 (9,9) resolve via
+# nearest-preceding to the last token (src_col 1).
+query ITI
+SELECT f.id, r.source, r.src_col
+FROM frames f
+JOIN sourcemap.main.lookup_all(
+       (SELECT id, line, col FROM frames),
+       map := '{"version":3,"sources":["index.js"],"names":[],"mappings":"AAAA,CAAC"}',
+       id := 'id') AS r ON r.id = f.id
+ORDER BY f.id;
+----
+1	index.js	0
+2	index.js	1
+3	index.js	1
+
+# A malformed map keeps the id passthrough but yields NULL resolution per row.
+query IT
+SELECT r.id, r.source
+FROM sourcemap.main.lookup_all(
+       (SELECT id, line, col FROM frames),
+       map := 'not a source map',
+       id := 'id') AS r
+ORDER BY r.id;
+----
+1	NULL
+2	NULL
+3	NULL
+
+statement ok
+DETACH sourcemap;

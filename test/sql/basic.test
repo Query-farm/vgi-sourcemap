@@ -1,0 +1,79 @@
+# name: test/sql/basic.test
+# group: [vgi_sourcemap]
+#
+# Scalar + table functions over inline map JSON text: tokens(), lookup() (incl.
+# nearest-preceding and the malformed-map NULL), meta(), sources(),
+# source_content(), and the version scalar.
+
+require-env VGI_SOURCEMAP_WORKER
+
+statement ok
+LOAD vgi;
+
+statement ok
+ATTACH 'sourcemap' AS sourcemap (TYPE vgi, LOCATION '${VGI_SOURCEMAP_WORKER}');
+
+statement ok
+SET search_path = 'sourcemap.main';
+
+# tokens(): decode the Base64-VLQ mappings into rows (two segments here).
+query I
+SELECT count(*) FROM tokens('{"version":3,"sources":["index.js"],"names":[],"mappings":"AAAA,CAAC"}');
+----
+2
+
+# tokens(): each segment's generated column and resolved original column.
+query ITI
+SELECT gen_col, source, src_col FROM tokens('{"version":3,"sources":["index.js"],"names":[],"mappings":"AAAA,CAAC"}') ORDER BY gen_col;
+----
+0	index.js	0
+1	index.js	1
+
+# lookup(): exact resolve of a generated position to its original location.
+query TII
+SELECT (r).source, (r).src_line, (r).src_col
+FROM (SELECT lookup('{"version":3,"sources":["index.js"],"names":[],"mappings":"AAAA,CAAC"}', 0, 0) AS r);
+----
+index.js	0	0
+
+# lookup(): nearest-preceding — column 5 falls back to the token at gen_col 1.
+query I
+SELECT (lookup('{"version":3,"sources":["index.js"],"names":[],"mappings":"AAAA,CAAC"}', 0, 5)).src_col;
+----
+1
+
+# lookup(): a malformed map yields NULL resolution, not a query error.
+query I
+SELECT (lookup('not a source map', 0, 0)).src_col;
+----
+NULL
+
+# meta(): version + counts.
+query III
+SELECT version, n_sources, n_mappings FROM meta('{"version":3,"sources":["index.js"],"names":[],"mappings":"AAAA,CAAC"}');
+----
+3	1	2
+
+# sources(): one source, with inline sourcesContent present.
+query ITI
+SELECT src_id, source, has_content::INT FROM sources('{"version":3,"sources":["a.js"],"sourcesContent":["const x = 1;"],"names":["x"],"mappings":"AAAA"}');
+----
+0	a.js	1
+
+# source_content(): the embedded original text for source 0.
+query T
+SELECT source_content('{"version":3,"sources":["a.js"],"sourcesContent":["const x = 1;"],"names":["x"],"mappings":"AAAA"}', 0);
+----
+const x = 1;
+
+# version scalar returns a non-empty string.
+query I
+SELECT (sourcemap_version() <> '')::INT;
+----
+1
+
+statement ok
+USE memory;
+
+statement ok
+DETACH sourcemap;
