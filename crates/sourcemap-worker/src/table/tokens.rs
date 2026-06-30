@@ -10,7 +10,7 @@ use arrow_array::builder::{Int64Builder, StringBuilder};
 use arrow_array::{ArrayRef, RecordBatch};
 use arrow_schema::{DataType, Schema, SchemaRef};
 use vgi::table_function::{TableFunction, TableProducer};
-use vgi::{ArgSpec, BindParams, BindResponse, FunctionMetadata, ProcessParams};
+use vgi::{ArgSpec, BindParams, BindResponse, FunctionExample, FunctionMetadata, ProcessParams};
 use vgi_rpc::{OutputCollector, Result, RpcError};
 
 use crate::arrow_io::commented;
@@ -98,6 +98,14 @@ impl TableFunction for Tokens {
         ));
         FunctionMetadata {
             description: "Decode a source map into its full token (mapping) table".into(),
+            examples: vec![FunctionExample {
+                sql: format!(
+                    "SELECT gen_line, gen_col, source FROM sourcemap.main.tokens('{}');",
+                    crate::SAMPLE_MAP
+                ),
+                description: "Explode an inline source map into its decoded token rows.".into(),
+                expected_output: None,
+            }],
             tags,
             ..Default::default()
         }

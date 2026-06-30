@@ -8,7 +8,7 @@ use arrow_array::builder::{Int64Builder, StringBuilder};
 use arrow_array::{ArrayRef, RecordBatch};
 use arrow_schema::{DataType, Schema, SchemaRef};
 use vgi::table_function::{TableFunction, TableProducer};
-use vgi::{ArgSpec, BindParams, BindResponse, FunctionMetadata, ProcessParams};
+use vgi::{ArgSpec, BindParams, BindResponse, FunctionExample, FunctionMetadata, ProcessParams};
 use vgi_rpc::{OutputCollector, Result, RpcError};
 
 use crate::arrow_io::commented;
@@ -88,6 +88,15 @@ impl TableFunction for Meta {
         ));
         FunctionMetadata {
             description: "Return one row of source-map metadata (version, file, counts)".into(),
+            examples: vec![FunctionExample {
+                sql: format!(
+                    "SELECT version, n_sources, n_mappings FROM sourcemap.main.meta('{}');",
+                    crate::SAMPLE_MAP
+                ),
+                description: "Read version, source count, and mapping count from an inline map."
+                    .into(),
+                expected_output: None,
+            }],
             tags,
             ..Default::default()
         }

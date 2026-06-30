@@ -9,7 +9,7 @@ use arrow_array::builder::{BooleanBuilder, Int64Builder, StringBuilder};
 use arrow_array::{ArrayRef, RecordBatch};
 use arrow_schema::{DataType, Schema, SchemaRef};
 use vgi::table_function::{TableFunction, TableProducer};
-use vgi::{ArgSpec, BindParams, BindResponse, FunctionMetadata, ProcessParams};
+use vgi::{ArgSpec, BindParams, BindResponse, FunctionExample, FunctionMetadata, ProcessParams};
 use vgi_rpc::{OutputCollector, Result, RpcError};
 
 use crate::arrow_io::commented;
@@ -69,6 +69,14 @@ impl TableFunction for Sources {
         FunctionMetadata {
             description: "List the original sources of a source map (with inline-content flag)"
                 .into(),
+            examples: vec![FunctionExample {
+                sql: format!(
+                    "SELECT src_id, source, has_content FROM sourcemap.main.sources('{}');",
+                    crate::SAMPLE_MAP
+                ),
+                description: "List the original source files referenced by an inline map.".into(),
+                expected_output: None,
+            }],
             tags,
             ..Default::default()
         }
