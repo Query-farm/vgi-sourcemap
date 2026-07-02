@@ -50,17 +50,23 @@ pub fn agent_test_tasks_json(tasks: &[(&str, &str, &str)]) -> String {
     format!("[{}]", items.join(","))
 }
 
-/// Build the four standard per-object discovery/description tags.
+/// Build the standard per-object discovery/description tags.
+///
+/// `category` must name one of the schema's `vgi.categories` entries (VGI413);
+/// it is emitted as the object's `vgi.category` tag so the linter and UIs can
+/// group functions under their schema-declared category.
 pub fn object_tags(
     title: &str,
     description_llm: &str,
     description_md: &str,
     keywords: &str,
+    category: &str,
 ) -> Vec<(String, String)> {
     vec![
         ("vgi.title".to_string(), title.to_string()),
         ("vgi.doc_llm".to_string(), description_llm.to_string()),
         ("vgi.doc_md".to_string(), description_md.to_string()),
         ("vgi.keywords".to_string(), keywords_json(keywords)),
+        ("vgi.category".to_string(), category.to_string()),
     ]
 }

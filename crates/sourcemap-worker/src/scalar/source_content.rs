@@ -47,6 +47,7 @@ impl ScalarFunction for SourceContent {
                  `source_content(read_text(map_path), 0)`. NULL when no inline content.",
                 "source content, sourcesContent, inline source, original source text, embedded \
                  source, src_id",
+                "Inspection",
             ),
             ..Default::default()
         }

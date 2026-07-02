@@ -70,9 +70,10 @@ impl TableFunction for Meta {
              a .map file, the raw map JSON text, or map BLOB bytes. Use it to size or sanity-check \
              a map before decoding it in full.",
             "Get one row of map-level metadata (version, file, source_root, n_sources, n_names, \
-             n_mappings), e.g. `SELECT * FROM meta('/dist/app.min.js.map')`.",
+             n_mappings).",
             "meta, metadata, source map version, file, sourceRoot, source_root, counts, n_sources, \
              n_mappings, summary",
+            "Inspection",
         );
         tags.push((
             "vgi.result_columns_md".into(),

@@ -69,6 +69,7 @@ impl TableInOutFunction for LookupAll {
              Emits `(id, source, src_line, src_col, name)`.",
             "lookup_all, bulk resolve, de-minify, deminify, error frames, RUM, error tracking, \
              stack frames, id passthrough, symbolicate, table function, resolve column",
+            "Resolution",
         );
         tags.push((
             "vgi.result_columns_md".into(),

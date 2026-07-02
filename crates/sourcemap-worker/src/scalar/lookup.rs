@@ -100,6 +100,7 @@ impl ScalarFunction for Lookup {
                  no match.",
                 "lookup, resolve, de-minify, deminify, source map, original position, stack frame, \
                  symbolicate, line column, nearest preceding, RUM, error tracking",
+                "Resolution",
             ),
             ..Default::default()
         }

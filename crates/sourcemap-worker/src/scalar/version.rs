@@ -33,6 +33,7 @@ impl ScalarFunction for SourcemapVersion {
                 "Return the sourcemap worker version string, e.g. \
                  `sourcemap_version()` → '0.1.0'.",
                 "version, build version, sourcemap_version, diagnostics, worker version, semver",
+                "Diagnostics",
             ),
             ..Default::default()
         }

@@ -72,18 +72,18 @@ fn catalog_metadata(name: &str) -> CatalogModel {
             (
                 "vgi.doc_llm".to_string(),
                 "Decode JavaScript Source Map v3 (.map) files in SQL and resolve minified \
-                 (line, col) positions back to their original source:line:col:name. `tokens(map)` \
-                 explodes a map into its decoded mapping table; `lookup(map, gen_line, gen_col)` \
-                 resolves one minified position to a STRUCT(source, src_line, src_col, name) using \
-                 nearest-preceding semantics; `lookup_all((SELECT id, line, col FROM frames), \
-                 map := …, id := 'id')` bulk-resolves a whole column of error frames with the id \
-                 passed through to join back; `sources(map)` lists original files (with an inline \
-                 sourcesContent flag) and `source_content(map, src_id)` returns embedded source \
-                 text; `meta(map)` reports version/file/source_root and counts. The `map` argument \
-                 is a path to a .map file, the raw map JSON text, or map BLOB bytes. Index maps \
-                 (sections) and inline sourcesContent are supported. All line/column numbers are \
-                 0-indexed. Use it to de-minify production RUM / error-tracking stack frames in \
-                 bulk with one JOIN."
+                 (line, col) positions back to their original source:line:col:name. A source map \
+                 encodes the mapping between a minified bundle and its original files as a \
+                 Base64-VLQ 'mappings' string; ordinary JSON readers expose the wrapper object but \
+                 cannot decode that grammar, so this worker does the decode and exposes both the \
+                 raw mapping rows and resolved original positions as queryable results. A map is \
+                 supplied as a path to a .map file, the raw map JSON text, or map BLOB bytes; \
+                 index maps (sections) and inline sourcesContent are supported. All line/column \
+                 numbers are 0-indexed, and position resolution uses nearest-preceding semantics \
+                 (the greatest mapping <= the requested position), so an exact match is not \
+                 required. Per-row resolution is tolerant — a NULL, malformed, or empty map yields \
+                 NULL rather than aborting the scan — which makes it suited to de-minifying whole \
+                 columns of production RUM / error-tracking stack frames in bulk with one JOIN."
                     .to_string(),
             ),
             (
@@ -91,24 +91,25 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 "# sourcemap\n\nDecode **JavaScript Source Map v3** (`.map`) files and resolve \
                  minified `(line, col)` positions back to original `source:line:col:name`, \
                  directly in DuckDB SQL. Nothing else in DuckDB reads source maps — `read_json` \
-                 gives you the wrapper object but not the decoded Base64-VLQ `mappings`. This \
-                 worker turns a column of `(error_url, line, col)` RUM frames into resolved \
-                 original locations with one JOIN.\n\nThe heavy lifting (Base64-VLQ decode, index \
-                 maps via `sections`, inline `sourcesContent`, the nearest-preceding lookup) is \
-                 done by the Sentry `sourcemap` crate; this worker is a thin Arrow adapter over \
-                 it. The overloaded `map` argument accepts a **path** to a `.map` file, the raw \
-                 map **JSON text** (e.g. from `read_text(...)`), or map **BLOB** bytes — so \
-                 data-URI inline maps decode via the text/bytes mode. All line/column numbers are \
-                 **0-indexed** (Source Map v3).\n\n**Scalars:** `lookup(map, gen_line, gen_col)` \
-                 (→ STRUCT(source, src_line, src_col, name)), `source_content(map, src_id)` \
-                 (→ VARCHAR), `sourcemap_version()`.\n\n**Table functions:** `tokens(map)` (the \
-                 full decoded mapping table), `sources(map)` (original files + inline-content \
-                 flag), `meta(map)` (version, file, source_root, counts).\n\n**Table-in-out:** \
-                 `lookup_all((SELECT id, line, col FROM frames), map := …, id := 'id')` — the \
-                 bulk de-minify entry point, with `id` passthrough so results join back to the \
-                 originating error.\n\n`lookup` returns the **nearest preceding** mapping (standard \
-                 source-map semantics), so an exact `(line, col)` match isn't required. A \
-                 malformed/empty map yields NULL resolution per row, never a query failure."
+                 gives you the wrapper object but not the decoded Base64-VLQ `mappings` grammar. \
+                 This worker performs that decode and exposes both the raw mapping rows and \
+                 resolved original positions, so a column of production RUM / error-tracking \
+                 frames can be de-minified in bulk with a single JOIN.\n\nThe heavy lifting \
+                 (Base64-VLQ decode, index maps via `sections`, inline `sourcesContent`, the \
+                 nearest-preceding lookup) is done by the Sentry `sourcemap` crate; this worker is \
+                 a thin Arrow adapter over it. A map is supplied as a **path** to a `.map` file, \
+                 the raw map **JSON text** (e.g. from `read_text(...)`), or map **BLOB** bytes — \
+                 so data-URI inline maps decode via the text/bytes mode.\n\n## Semantics\n\n- All \
+                 line/column numbers are **0-indexed** (Source Map v3); browser stack frames are \
+                 usually 1-indexed, so subtract one before resolving.\n- Position resolution is \
+                 **nearest-preceding** (the greatest mapping `<=` the requested position), so an \
+                 exact `(line, col)` match isn't required.\n- Per-row resolution is **tolerant**: \
+                 a NULL, malformed, or empty map — or a position with no match — yields NULL \
+                 rather than failing the query, so one bad frame never aborts a scan.\n\n## When \
+                 to use\n\nReach for it whenever you have minified positions (deployed bundle \
+                 line/column) and the corresponding source map, and you want the original file, \
+                 line, column, and symbol name back — one frame at a time or a whole error table \
+                 at once."
                     .to_string(),
             ),
             (
@@ -197,22 +198,44 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 ("topic".to_string(), "source-maps".to_string()),
                 (
                     "vgi.doc_llm".to_string(),
-                    "Functions for JavaScript Source Map v3: decode a map into its token table \
-                     (tokens), resolve one minified position (lookup → STRUCT), bulk-resolve a \
-                     column of frames with id passthrough (lookup_all), list original sources \
-                     (sources) and fetch embedded source text (source_content), and report \
-                     map metadata (meta). The map argument is a .map path, raw JSON text, or BLOB."
+                    "The single schema for JavaScript Source Map v3 work: decoding a map's \
+                     Base64-VLQ mappings into rows and resolving minified (line, col) positions \
+                     back to original source locations. A map is supplied as a .map path, raw \
+                     JSON text, or BLOB. All line/column numbers are 0-indexed and position \
+                     resolution is nearest-preceding, so an exact match is not required. Functions \
+                     are grouped into resolution, inspection, and diagnostics categories."
                         .to_string(),
                 ),
                 (
                     "vgi.doc_md".to_string(),
-                    "The single schema for the `sourcemap` worker — the catalog name matches the \
-                     `ATTACH` name, so qualify calls as `sourcemap.main.<fn>(...)`. It holds the \
-                     `lookup` (→ STRUCT) and `source_content` (→ VARCHAR) scalars, the \
-                     `sourcemap_version` scalar, the `tokens` / `sources` / `meta` table \
-                     functions, and the `lookup_all` table-in-out function (bulk frame resolution \
-                     with id passthrough). All line/column numbers are 0-indexed; `lookup` uses \
-                     nearest-preceding semantics."
+                    "## main\n\nThe single schema for the `sourcemap` worker. The catalog name \
+                     matches the `ATTACH` name, so qualify calls as `sourcemap.main.<fn>(...)`.\n\n\
+                     It covers decoding a Source Map v3 map into its mapping rows and resolving \
+                     minified `(line, col)` positions back to original `source:line:col:name`.\n\n\
+                     ## Semantics\n\n- All line/column numbers are **0-indexed**.\n- Position \
+                     resolution is **nearest-preceding** (the greatest mapping `<=` the requested \
+                     position), so an exact match isn't required.\n- Per-row resolution is \
+                     tolerant: a NULL, malformed, or empty map yields NULL rather than failing the \
+                     query.\n\n## Categories\n\nFunctions are organized under the schema's \
+                     `vgi.categories`: **Resolution**, **Inspection**, and **Diagnostics**."
+                        .to_string(),
+                ),
+                // VGI413 category registry: the ordered set of categories every object's
+                // `vgi.category` tag must name. Descriptions state the category's purpose (not an
+                // object inventory).
+                (
+                    "vgi.categories".to_string(),
+                    "[\
+                     {\"name\":\"Resolution\",\
+                     \"description\":\"Resolve minified (line, col) positions back to their \
+                     original source locations, one frame or a whole column at a time.\"},\
+                     {\"name\":\"Inspection\",\
+                     \"description\":\"Decode a source map and inspect its contents — the decoded \
+                     mappings, original files, embedded source text, and map-level metadata.\"},\
+                     {\"name\":\"Diagnostics\",\
+                     \"description\":\"Operational utilities such as reporting the running worker \
+                     build.\"}\
+                     ]"
                         .to_string(),
                 ),
                 // VGI506 representative example queries (run against inline map text so they

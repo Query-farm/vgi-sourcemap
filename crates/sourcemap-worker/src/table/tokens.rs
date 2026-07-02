@@ -79,9 +79,10 @@ impl TableFunction for Tokens {
              line/column numbers are 0-indexed. Use it to inspect or join the raw mappings of a \
              source map.",
             "Explode a source map into its decoded token table (gen_line, gen_col, src_id, \
-             source, src_line, src_col, name), e.g. `SELECT * FROM tokens('/dist/app.min.js.map')`.",
+             source, src_line, src_col, name).",
             "tokens, mappings, decode source map, VLQ, segments, gen_line, gen_col, source map \
              table, explode mappings",
+            "Inspection",
         );
         tags.push((
             "vgi.result_columns_md".into(),

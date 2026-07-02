@@ -52,10 +52,10 @@ impl TableFunction for Sources {
              embeds that source's text inline via sourcesContent). The `map` argument is a path \
              to a .map file, the raw map JSON text, or map BLOB bytes. Use it to discover the \
              originals behind a bundle, then fetch embedded text with source_content(map, src_id).",
-            "List a map's original sources (src_id, source, has_content), e.g. \
-             `SELECT * FROM sources('/dist/app.min.js.map')`.",
+            "List a map's original sources (src_id, source, has_content).",
             "sources, source files, original files, sourcesContent, has_content, src_id, list \
              sources, bundle inputs",
+            "Inspection",
         );
         tags.push((
             "vgi.result_columns_md".into(),
