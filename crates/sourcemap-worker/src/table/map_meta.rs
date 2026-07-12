@@ -75,17 +75,19 @@ impl TableFunction for Meta {
              n_mappings, summary",
             "Inspection",
         );
+        // VGI307/VGI321: static result schema, declared as the structured
+        // `vgi.result_columns_schema` (one {name,type,description} per column).
         tags.push((
-            "vgi.result_columns_md".into(),
-            "| column | type | description |\n\
-             |---|---|---|\n\
-             | `version` | BIGINT | spec version (3). |\n\
-             | `file` | VARCHAR | generated file (NULL if unset). |\n\
-             | `source_root` | VARCHAR | `sourceRoot` (NULL if unset). |\n\
-             | `n_sources` | BIGINT | original source count. |\n\
-             | `n_names` | BIGINT | symbol-name count. |\n\
-             | `n_mappings` | BIGINT | decoded token count. |"
-                .into(),
+            "vgi.result_columns_schema".into(),
+            r#"[
+  {"name": "version", "type": "BIGINT", "description": "Source Map spec version (always 3)."},
+  {"name": "file", "type": "VARCHAR", "description": "The generated (minified) file the map describes, or NULL if unset."},
+  {"name": "source_root", "type": "VARCHAR", "description": "The map's sourceRoot prefix, or NULL if unset."},
+  {"name": "n_sources", "type": "BIGINT", "description": "Number of original source files the map references."},
+  {"name": "n_names", "type": "BIGINT", "description": "Number of original symbol names the map carries."},
+  {"name": "n_mappings", "type": "BIGINT", "description": "Number of decoded tokens (after flattening any index-map sections)."}
+]"#
+            .into(),
         ));
         FunctionMetadata {
             description: "Return one row of source-map metadata (version, file, counts)".into(),

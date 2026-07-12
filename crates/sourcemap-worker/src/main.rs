@@ -29,7 +29,7 @@ mod smap;
 mod table;
 mod table_in_out;
 
-use vgi::catalog::{CatSchema, CatalogModel};
+use vgi::catalog::{CatSchema, CatView, CatalogModel};
 use vgi::Worker;
 
 /// Worker version string, surfaced by `sourcemap_version()`.
@@ -155,6 +155,36 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                          id := 'id') AS r",
                     ),
                     (
+                        "inline_source_text",
+                        "A source map can embed its original files inline via sourcesContent. \
+                         For the map JSON \
+                         {\"version\":3,\"sources\":[\"a.js\"],\"sourcesContent\":[\"const x = 1;\"],\
+                         \"names\":[],\"mappings\":\"AAAA\"}, return the embedded original source \
+                         text for source id 0 as a single column named content.",
+                        "SELECT sourcemap.main.source_content(\
+                         '{\"version\":3,\"sources\":[\"a.js\"],\"sourcesContent\":[\"const x = 1;\"],\
+                         \"names\":[],\"mappings\":\"AAAA\"}', 0) AS content",
+                    ),
+                    (
+                        "sources_with_inline_content",
+                        "For the source map \
+                         {\"version\":3,\"sources\":[\"a.js\",\"b.js\"],\
+                         \"sourcesContent\":[\"const x=1;\",null],\"names\":[],\"mappings\":\"AAAA\"}, \
+                         how many of its original source files embed inline text? Return the count \
+                         as a single column named n.",
+                        "SELECT count(*) FILTER (WHERE has_content) AS n FROM sourcemap.main.sources(\
+                         '{\"version\":3,\"sources\":[\"a.js\",\"b.js\"],\
+                         \"sourcesContent\":[\"const x=1;\",null],\"names\":[],\"mappings\":\"AAAA\"}')",
+                    ),
+                    (
+                        "registry_resolution_count",
+                        "The worker publishes a browsable registry of its own functions. \
+                         According to that registry, how many functions are in the 'Resolution' \
+                         category? Return the count as a single column named n.",
+                        "SELECT count(*) AS n FROM sourcemap.main.functions \
+                         WHERE category = 'Resolution'",
+                    ),
+                    (
                         "worker_version",
                         "What version of the sourcemap worker is currently running? Return a \
                          single row with one column named version.",
@@ -252,7 +282,127 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                     ),
                 ),
             ],
-            views: Vec::new(),
+            // A browsable, credential-free reference view (VGI146): it lets an
+            // agent SELECT the worker's own function surface — name, kind,
+            // category, return shape, and one-line purpose — before it has to
+            // construct a `map` argument for any function. Backed by a literal
+            // VALUES list so it scans instantly with no .map file or network.
+            views: vec![CatView {
+                name: "functions".to_string(),
+                definition: "SELECT * FROM (VALUES \
+                    ('lookup', 'scalar', 'Resolution', \
+                     'STRUCT(source, src_line, src_col, name)', \
+                     'Resolve one minified (line, col) position against a map to its original \
+                      source location.'), \
+                    ('lookup_all', 'table', 'Resolution', \
+                     'id passthrough + (source, src_line, src_col, name)', \
+                     'Bulk-resolve a whole column of minified frames against one map, joining back \
+                      by a passthrough id.'), \
+                    ('tokens', 'table', 'Inspection', \
+                     '(gen_line, gen_col, src_id, source, src_line, src_col, name)', \
+                     'Explode a map into its full decoded token (mapping) table, one row per \
+                      Base64-VLQ segment.'), \
+                    ('sources', 'table', 'Inspection', '(src_id, source, has_content)', \
+                     'List a map''s original source files, with a flag for inline sourcesContent.'), \
+                    ('meta', 'table', 'Inspection', \
+                     '(version, file, source_root, n_sources, n_names, n_mappings)', \
+                     'Return one row of map-level metadata (version, file, source_root, and \
+                      counts).'), \
+                    ('source_content', 'scalar', 'Inspection', 'VARCHAR', \
+                     'Return one original source''s inline sourcesContent text, by its 0-based \
+                      src_id.'), \
+                    ('sourcemap_version', 'scalar', 'Diagnostics', 'VARCHAR', \
+                     'Report the running worker build version.') \
+                    ) AS t(function, kind, category, returns, summary)"
+                    .to_string(),
+                comment: Some(
+                    "Browsable registry of the sourcemap worker's own functions — name, kind, \
+                     category, return shape, and purpose — so an agent can discover the surface \
+                     before calling anything."
+                        .to_string(),
+                ),
+                tags: vec![
+                    (
+                        "vgi.title".to_string(),
+                        "Sourcemap — Function Registry".to_string(),
+                    ),
+                    ("vgi.category".to_string(), "Diagnostics".to_string()),
+                    ("domain".to_string(), "web-observability".to_string()),
+                    (
+                        "vgi.keywords".to_string(),
+                        crate::meta::keywords_json(
+                            "functions, registry, surface, catalog, reference, cheat sheet, \
+                             discover, lookup, lookup_all, tokens, sources, meta, source_content, \
+                             sourcemap_version, kind, category",
+                        ),
+                    ),
+                    (
+                        "vgi.doc_llm".to_string(),
+                        "A static lookup table of the sourcemap worker's own function surface, so \
+                         an agent can enumerate what the worker offers before constructing a `map` \
+                         argument. One row per function: `function` is the callable name (qualify \
+                         it as sourcemap.main.<function>), `kind` is 'scalar' or 'table' (table \
+                         covers table and table-in-out functions), `category` is one of \
+                         Resolution, Inspection, or Diagnostics, `returns` is the result shape, \
+                         and `summary` is a one-line purpose. Filter on kind or category to narrow \
+                         the surface — e.g. the Resolution functions de-minify positions, the \
+                         Inspection functions decode and inspect a map."
+                            .to_string(),
+                    ),
+                    (
+                        "vgi.doc_md".to_string(),
+                        "# functions\n\nA browsable, credential-free registry of the `sourcemap` \
+                         worker's own function surface. Query it to discover what the worker \
+                         offers before constructing a `map` argument.\n\nEach row is one \
+                         function:\n\n- **function** — the callable name; qualify it as \
+                         `sourcemap.main.<function>`.\n- **kind** — `scalar` or `table` (table \
+                         covers both table and table-in-out functions).\n- **category** — one of \
+                         `Resolution`, `Inspection`, or `Diagnostics`.\n- **returns** — the result \
+                         shape.\n- **summary** — a one-line purpose.\n\nFilter `category = \
+                         'Resolution'` to list the de-minification entry points, or `kind = \
+                         'table'` to see the set-returning functions."
+                            .to_string(),
+                    ),
+                    (
+                        "vgi.example_queries".to_string(),
+                        "[{\"description\":\"List the worker's de-minification (Resolution) \
+                         functions and how to call them.\",\"sql\":\"SELECT function, returns, \
+                         summary FROM sourcemap.main.functions WHERE category = 'Resolution' \
+                         ORDER BY function\"},\
+                         {\"description\":\"Count the worker's functions by kind (scalar vs \
+                         table).\",\"sql\":\"SELECT kind, count(*) AS n FROM \
+                         sourcemap.main.functions GROUP BY kind ORDER BY kind\"}]"
+                            .to_string(),
+                    ),
+                ],
+                column_comments: vec![
+                    (
+                        "function".to_string(),
+                        "The callable function name; qualify it as sourcemap.main.<function>."
+                            .to_string(),
+                    ),
+                    (
+                        "kind".to_string(),
+                        "'scalar' or 'table' (table covers table and table-in-out functions)."
+                            .to_string(),
+                    ),
+                    (
+                        "category".to_string(),
+                        "The function's category: Resolution, Inspection, or Diagnostics."
+                            .to_string(),
+                    ),
+                    (
+                        "returns".to_string(),
+                        "The result shape the function returns (STRUCT fields, table columns, or \
+                         a scalar type)."
+                            .to_string(),
+                    ),
+                    (
+                        "summary".to_string(),
+                        "A one-line description of what the function does.".to_string(),
+                    ),
+                ],
+            }],
             macros: Vec::new(),
             tables: Vec::new(),
         }],

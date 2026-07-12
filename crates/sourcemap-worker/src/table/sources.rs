@@ -57,14 +57,16 @@ impl TableFunction for Sources {
              sources, bundle inputs",
             "Inspection",
         );
+        // VGI307/VGI321: static result schema, declared as the structured
+        // `vgi.result_columns_schema` (one {name,type,description} per column).
         tags.push((
-            "vgi.result_columns_md".into(),
-            "| column | type | description |\n\
-             |---|---|---|\n\
-             | `src_id` | BIGINT | 0-based source index. |\n\
-             | `source` | VARCHAR | original source path. |\n\
-             | `has_content` | BOOLEAN | inline `sourcesContent` present? |"
-                .into(),
+            "vgi.result_columns_schema".into(),
+            r#"[
+  {"name": "src_id", "type": "BIGINT", "description": "0-based source index (feed it to source_content(map, src_id) to fetch this file's embedded text)."},
+  {"name": "source", "type": "VARCHAR", "description": "Original source file path, with the map's sourceRoot already joined on."},
+  {"name": "has_content", "type": "BOOLEAN", "description": "Whether the map embeds this source's text inline via sourcesContent."}
+]"#
+            .into(),
         ));
         FunctionMetadata {
             description: "List the original sources of a source map (with inline-content flag)"

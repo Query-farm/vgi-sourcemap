@@ -71,16 +71,23 @@ impl TableInOutFunction for LookupAll {
              stack frames, id passthrough, symbolicate, table function, resolve column",
             "Resolution",
         );
+        // VGI307/VGI326: the result schema is DYNAMIC — the leading passthrough
+        // column takes the exact name and type of the input `id` column, so the
+        // shape varies per call. Declared as `vgi.result_dynamic_columns_md` with
+        // a representative Name|Type|Description variant table.
         tags.push((
-            "vgi.result_columns_md".into(),
-            "The output is the passthrough **id** column (same name and type as the input) \
-             followed by:\n\n\
-             | column | type | description |\n\
+            "vgi.result_dynamic_columns_md".into(),
+            "The first output column is the **passthrough id** — it takes the exact name and type \
+             of the input `id` column (whatever you named via `id :=`), so results join back to \
+             the originating row. It is followed by four fixed resolution columns. For an input \
+             relation whose id column is a `BIGINT` named `id`, the result columns are:\n\n\
+             | Name | Type | Description |\n\
              |---|---|---|\n\
-             | `source` | VARCHAR | original source file (NULL if unresolved). |\n\
-             | `src_line` | BIGINT | 0-indexed original line (NULL if unresolved). |\n\
-             | `src_col` | BIGINT | 0-indexed original column (NULL if unresolved). |\n\
-             | `name` | VARCHAR | original symbol name (NULL if none). |"
+             | `id` | BIGINT | Passthrough of the input id column (same name and type as the input). |\n\
+             | `source` | VARCHAR | Original source file, or NULL when the frame does not resolve. |\n\
+             | `src_line` | BIGINT | 0-indexed original line, or NULL when unresolved. |\n\
+             | `src_col` | BIGINT | 0-indexed original column, or NULL when unresolved. |\n\
+             | `name` | VARCHAR | Original symbol name, or NULL if the mapping carries none. |"
                 .into(),
         ));
         tags.push((

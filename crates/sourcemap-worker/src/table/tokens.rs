@@ -84,18 +84,21 @@ impl TableFunction for Tokens {
              table, explode mappings",
             "Inspection",
         );
+        // VGI307/VGI321: static result schema (same columns for every call),
+        // declared as structured `vgi.result_columns_schema` — one
+        // {name,type,description} per returned column. Mirrors `output_schema()`.
         tags.push((
-            "vgi.result_columns_md".into(),
-            "| column | type | description |\n\
-             |---|---|---|\n\
-             | `gen_line` | BIGINT | 0-indexed generated line. |\n\
-             | `gen_col` | BIGINT | 0-indexed generated column. |\n\
-             | `src_id` | BIGINT | source index (NULL if none). |\n\
-             | `source` | VARCHAR | original file (NULL if none). |\n\
-             | `src_line` | BIGINT | 0-indexed original line (NULL if none). |\n\
-             | `src_col` | BIGINT | 0-indexed original column (NULL if none). |\n\
-             | `name` | VARCHAR | original symbol name (NULL if none). |"
-                .into(),
+            "vgi.result_columns_schema".into(),
+            r#"[
+  {"name": "gen_line", "type": "BIGINT", "description": "0-indexed generated (minified) line of this mapping."},
+  {"name": "gen_col", "type": "BIGINT", "description": "0-indexed generated (minified) column of this mapping."},
+  {"name": "src_id", "type": "BIGINT", "description": "0-based index into sources() of the original file, or NULL if the token has no source."},
+  {"name": "source", "type": "VARCHAR", "description": "Original source file path this mapping points at, or NULL."},
+  {"name": "src_line", "type": "BIGINT", "description": "0-indexed original source line, or NULL."},
+  {"name": "src_col", "type": "BIGINT", "description": "0-indexed original source column, or NULL."},
+  {"name": "name", "type": "VARCHAR", "description": "Original symbol name for this mapping, or NULL if none."}
+]"#
+            .into(),
         ));
         FunctionMetadata {
             description: "Decode a source map into its full token (mapping) table".into(),

@@ -10,7 +10,7 @@ A [VGI](https://query.farm) worker (Rust, compiled binary) that decodes
 positions back to their original `source:line:col:name`, exposed to DuckDB/SQL
 over Arrow IPC (`ATTACH 'sourcemap' (TYPE vgi, LOCATION '…')`). Functions live
 under catalog `sourcemap`, schema `main`. Built on the published VGI Rust SDK
-(`vgi = "0.9.5"` from crates.io), arrow 59; modeled on `../vgi-units` and
+(`vgi = "0.18.0"` from crates.io), arrow 59; modeled on `../vgi-units` and
 `../vgi-fixedformat`. Builds standalone — no local SDK checkout.
 
 **Deliberately thin** (committee scope ≈ 1 week): the Sentry `sourcemap` crate
@@ -22,7 +22,7 @@ table-in-out plumbing.
 ## Layout
 
 ```
-Cargo.toml                                 workspace; pins vgi 0.9.5, arrow 59, sourcemap 9
+Cargo.toml                                 workspace; pins vgi 0.18, arrow 59, sourcemap 9
 crates/sourcemap-worker/
   src/main.rs                              Worker::new(); registers scalars/tables/table-in-out + catalog metadata
   src/lib.rs                               lib target re-exporting `smap` for integration tests
@@ -125,7 +125,7 @@ path-mode tests resolve.
 Per-object discovery tags come from `meta::object_tags`; the catalog/schema
 metadata + `source_url` + agent-test tasks live in `main.rs`. Every example query,
 executable example, and agent task runs against **inline map text**, so they bind
-AND execute offline — the worker scores **100/100** at `vgi-lint --fail-on info`
+AND execute offline — the worker passes clean (0 findings at info, static score 100) at `vgi-lint --fail-on info`
 (see `vgi-lint.toml`). Watch out for VGI313 (don't name a data type in an
 argument description) and VGI310 (don't type every argument `ANY` — the position
 args are `BIGINT`, only the genuinely-overloaded `map` is `ANY`).

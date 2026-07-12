@@ -4,8 +4,8 @@
 # as inline JSON text (or a path / BLOB), so all of the documented example
 # queries, executable examples, and agent-test tasks bind AND execute without any
 # external backend or network. We therefore keep ALL rules enabled — including
-# the example-execution rules (VGI9xx) — and gate at `info`. The worker scores
-# 100/100.
+# the example-execution rules (VGI9xx) — and gate at `info`. The worker passes
+# clean (0 findings at info) with a perfect static score.
 #
 # `location` lets you run `vgi-lint` with no arguments from the repo root after a
 # `cargo build --release`; CI passes the same binary via the
