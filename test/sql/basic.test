@@ -3,7 +3,7 @@
 #
 # Scalar + table functions over inline map JSON text: tokens(), lookup() (incl.
 # nearest-preceding and the malformed-map NULL), meta(), sources(),
-# source_content(), and the version scalar.
+# source_content(), and the browsable example_tokens view.
 
 require-env VGI_SOURCEMAP_WORKER
 
@@ -66,9 +66,15 @@ SELECT source_content('{"version":3,"sources":["a.js"],"sourcesContent":["const 
 ----
 const x = 1;
 
-# version scalar returns a non-empty string.
+# example_tokens view: a browsable, no-argument preview that decodes the built-in
+# sample map (one source, one mapping) into its token rows.
+query III
+SELECT gen_line, gen_col, source FROM example_tokens;
+----
+0	0	index.js
+
 query I
-SELECT (sourcemap_version() <> '')::INT;
+SELECT count(*) FROM example_tokens;
 ----
 1
 

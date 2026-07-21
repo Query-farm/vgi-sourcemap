@@ -70,6 +70,32 @@ impl ScalarFunction for Lookup {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        const EXAMPLE_SQL: &str = "SELECT sourcemap.main.lookup('{\"version\":3,\
+             \"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}', 0, 0);";
+        const EXAMPLE_DESC: &str = "Resolve a generated line/column back to its original location.";
+        let mut tags = crate::meta::object_tags(
+            "Resolve Minified Position",
+            "Resolve one minified (generated) line/column position back to its original \
+             source location using nearest-preceding source-map semantics. Returns a \
+             `STRUCT(source VARCHAR, src_line BIGINT, src_col BIGINT, name VARCHAR)`. The `map` \
+             argument is a path to a .map file, the raw map JSON text, or map `BLOB` bytes. All \
+             line/column numbers are 0-indexed. Returns NULL when the map is NULL, malformed, \
+             or empty, when a position is NULL, or when the position precedes the first \
+             mapping. Use it to de-minify a single error frame.",
+            "Resolve a minified `(gen_line, gen_col)` to its original \
+             `STRUCT(source, src_line, src_col, name)`, e.g. \
+             `lookup(read_text(map_path), line, col)`. Nearest-preceding; 0-indexed; NULL on \
+             no match.",
+            "lookup, resolve, de-minify, deminify, source map, original position, stack frame, \
+             symbolicate, line column, nearest preceding, RUM, error tracking",
+            "Resolution",
+        );
+        // VGI515: described-example carrier (duckdb_functions().examples drops the
+        // description); byte-identical to the FunctionExample below.
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&[(EXAMPLE_DESC, EXAMPLE_SQL)]),
+        ));
         FunctionMetadata {
             description: "Resolve a minified (gen_line, gen_col) position to its original \
                           STRUCT(source, src_line, src_col, name) using nearest-preceding \
@@ -78,30 +104,11 @@ impl ScalarFunction for Lookup {
                 .into(),
             return_type: Some(DataType::Struct(resolved_struct_fields())),
             examples: vec![FunctionExample {
-                sql: "SELECT sourcemap.main.lookup('{\"version\":3,\"sources\":[\"index.js\"],\
-                      \"names\":[],\"mappings\":\"AAAA\"}', 0, 0);"
-                    .into(),
-                description: "Resolve a generated line/column back to its original location."
-                    .into(),
+                sql: EXAMPLE_SQL.into(),
+                description: EXAMPLE_DESC.into(),
                 expected_output: None,
             }],
-            tags: crate::meta::object_tags(
-                "Resolve Minified Position",
-                "Resolve one minified (generated) line/column position back to its original \
-                 source location using nearest-preceding source-map semantics. Returns a \
-                 STRUCT(source VARCHAR, src_line BIGINT, src_col BIGINT, name VARCHAR). The `map` \
-                 argument is a path to a .map file, the raw map JSON text, or map BLOB bytes. All \
-                 line/column numbers are 0-indexed. Returns NULL when the map is NULL, malformed, \
-                 or empty, when a position is NULL, or when the position precedes the first \
-                 mapping. Use it to de-minify a single error frame.",
-                "Resolve a minified `(gen_line, gen_col)` to its original \
-                 `STRUCT(source, src_line, src_col, name)`, e.g. \
-                 `lookup(read_text(map_path), line, col)`. Nearest-preceding; 0-indexed; NULL on \
-                 no match.",
-                "lookup, resolve, de-minify, deminify, source map, original position, stack frame, \
-                 symbolicate, line column, nearest preceding, RUM, error tracking",
-                "Resolution",
-            ),
+            tags,
             ..Default::default()
         }
     }

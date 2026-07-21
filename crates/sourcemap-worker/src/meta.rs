@@ -50,6 +50,30 @@ pub fn agent_test_tasks_json(tasks: &[(&str, &str, &str)]) -> String {
     format!("[{}]", items.join(","))
 }
 
+/// Build a `vgi.example_queries` value: a JSON list of `{"description","sql"}`
+/// objects (VGI515). This is the carrier that preserves each example's
+/// description — the native `duckdb_functions().examples` column drops it — so
+/// every function that ships a `FunctionExample` also emits a byte-identical
+/// described-example tag here.
+pub fn example_queries_json(examples: &[(&str, &str)]) -> String {
+    fn esc(s: &str) -> String {
+        s.replace('\\', "\\\\")
+            .replace('"', "\\\"")
+            .replace('\n', "\\n")
+    }
+    let items: Vec<String> = examples
+        .iter()
+        .map(|(description, sql)| {
+            format!(
+                "{{\"description\":\"{}\",\"sql\":\"{}\"}}",
+                esc(description),
+                esc(sql)
+            )
+        })
+        .collect();
+    format!("[{}]", items.join(","))
+}
+
 /// Build the standard per-object discovery/description tags.
 ///
 /// `category` must name one of the schema's `vgi.categories` entries (VGI413);

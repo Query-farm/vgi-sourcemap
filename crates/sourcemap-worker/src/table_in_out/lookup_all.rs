@@ -58,7 +58,7 @@ impl TableInOutFunction for LookupAll {
              returning the original (source, src_line, src_col, name) for each — with the input \
              id column passed through so the result joins back to the originating row. The input \
              relation is supplied as a subquery (e.g. `(SELECT id, line, col FROM frames)`); the \
-             single map is the named `map :=` argument (a .map path, raw JSON text, or BLOB). \
+             single map is the named `map :=` argument (a .map path, raw JSON text, or `BLOB`). \
              Name the id/line/col columns with `id :=` / `line :=` / `col :=` (defaults 'id', \
              'line', 'col'). Positions are 0-indexed; resolution is nearest-preceding. A \
              malformed map, NULL position, or no-match yields NULL resolution columns for that \
@@ -90,15 +90,18 @@ impl TableInOutFunction for LookupAll {
              | `name` | VARCHAR | Original symbol name, or NULL if the mapping carries none. |"
                 .into(),
         ));
+        const EXAMPLE_DESC: &str =
+            "Resolve a column of frames against one inline map, joining back by id.";
+        const EXAMPLE_SQL: &str = "SELECT r.id, r.source, r.src_line FROM sourcemap.main.lookup_all((SELECT * FROM (VALUES (1, 0, 0)) AS f(id, line, col)), map := '{\"version\":3,\"file\":\"o.js\",\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}', id := 'id') AS r";
         tags.push((
             "vgi.executable_examples".into(),
-            r#"[
-  {
-    "description": "Resolve a column of frames against one inline map, joining back by id.",
-    "sql": "SELECT r.id, r.source, r.src_line FROM sourcemap.main.lookup_all((SELECT * FROM (VALUES (1, 0, 0)) AS f(id, line, col)), map := '{\"version\":3,\"file\":\"o.js\",\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}', id := 'id') AS r"
-  }
-]"#
-            .into(),
+            crate::meta::example_queries_json(&[(EXAMPLE_DESC, EXAMPLE_SQL)]),
+        ));
+        // VGI515: also surface the described example via the standard
+        // `vgi.example_queries` carrier, byte-identical to the executable example.
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&[(EXAMPLE_DESC, EXAMPLE_SQL)]),
         ));
         FunctionMetadata {
             description:

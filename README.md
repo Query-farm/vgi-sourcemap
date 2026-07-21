@@ -62,7 +62,9 @@ A `VARCHAR` is treated as inline JSON when it begins with `{` (after an optional
 | **Sources** | `sources(map)` | table: `src_id, source, has_content` |
 | **Inline content** | `source_content(map, src_id)` | `VARCHAR` |
 | **Metadata** | `meta(map)` | table: `version, file, source_root, n_sources, n_names, n_mappings` |
-| **Version** | `sourcemap_version()` | `VARCHAR` |
+
+The running worker build is published as the catalog's `implementation_version`
+(read it from `vgi_catalogs()`), so there is no separate version function.
 
 **Conventions**
 

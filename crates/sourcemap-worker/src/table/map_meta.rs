@@ -67,7 +67,7 @@ impl TableFunction for Meta {
             "Return one row of metadata about a Source Map v3 (.map): version, file (the \
              generated file it describes), source_root, n_sources, n_names, and n_mappings (the \
              decoded token count after flattening any sections). The `map` argument is a path to \
-             a .map file, the raw map JSON text, or map BLOB bytes. Use it to size or sanity-check \
+             a .map file, the raw map JSON text, or map `BLOB` bytes. Use it to size or sanity-check \
              a map before decoding it in full.",
             "Get one row of map-level metadata (version, file, source_root, n_sources, n_names, \
              n_mappings).",
@@ -89,15 +89,22 @@ impl TableFunction for Meta {
 ]"#
             .into(),
         ));
+        let example_sql = format!(
+            "SELECT version, n_sources, n_mappings FROM sourcemap.main.meta('{}');",
+            crate::SAMPLE_MAP
+        );
+        const EXAMPLE_DESC: &str =
+            "Read version, source count, and mapping count from an inline map.";
+        // VGI515: described-example carrier, byte-identical to the FunctionExample.
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&[(EXAMPLE_DESC, &example_sql)]),
+        ));
         FunctionMetadata {
             description: "Return one row of source-map metadata (version, file, counts)".into(),
             examples: vec![FunctionExample {
-                sql: format!(
-                    "SELECT version, n_sources, n_mappings FROM sourcemap.main.meta('{}');",
-                    crate::SAMPLE_MAP
-                ),
-                description: "Read version, source count, and mapping count from an inline map."
-                    .into(),
+                sql: example_sql,
+                description: EXAMPLE_DESC.into(),
                 expected_output: None,
             }],
             tags,

@@ -32,7 +32,9 @@ mod table_in_out;
 use vgi::catalog::{CatSchema, CatView, CatalogModel};
 use vgi::Worker;
 
-/// Worker version string, surfaced by `sourcemap_version()`.
+/// Worker build version, published as the catalog's `implementation_version` (an
+/// agent reads it from `vgi_catalogs()` without spending a query, and it can't
+/// drift from the running build).
 pub fn version() -> &'static str {
     env!("CARGO_PKG_VERSION")
 }
@@ -77,7 +79,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                  Base64-VLQ 'mappings' string; ordinary JSON readers expose the wrapper object but \
                  cannot decode that grammar, so this worker does the decode and exposes both the \
                  raw mapping rows and resolved original positions as queryable results. A map is \
-                 supplied as a path to a .map file, the raw map JSON text, or map BLOB bytes; \
+                 supplied as a path to a .map file, the raw map JSON text, or map `BLOB` bytes; \
                  index maps (sections) and inline sourcesContent are supported. All line/column \
                  numbers are 0-indexed, and position resolution uses nearest-preceding semantics \
                  (the greatest mapping <= the requested position), so an exact match is not \
@@ -98,7 +100,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                  (Base64-VLQ decode, index maps via `sections`, inline `sourcesContent`, the \
                  nearest-preceding lookup) is done by the Sentry `sourcemap` crate; this worker is \
                  a thin Arrow adapter over it. A map is supplied as a **path** to a `.map` file, \
-                 the raw map **JSON text** (e.g. from `read_text(...)`), or map **BLOB** bytes — \
+                 the raw map **JSON text** (e.g. from `read_text(...)`), or map `BLOB` bytes — \
                  so data-URI inline maps decode via the text/bytes mode.\n\n## Semantics\n\n- All \
                  line/column numbers are **0-indexed** (Source Map v3); browser stack frames are \
                  usually 1-indexed, so subtract one before resolving.\n- Position resolution is \
@@ -177,18 +179,11 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                          \"sourcesContent\":[\"const x=1;\",null],\"names\":[],\"mappings\":\"AAAA\"}')",
                     ),
                     (
-                        "registry_resolution_count",
-                        "The worker publishes a browsable registry of its own functions. \
-                         According to that registry, how many functions are in the 'Resolution' \
-                         category? Return the count as a single column named n.",
-                        "SELECT count(*) AS n FROM sourcemap.main.functions \
-                         WHERE category = 'Resolution'",
-                    ),
-                    (
-                        "worker_version",
-                        "What version of the sourcemap worker is currently running? Return a \
-                         single row with one column named version.",
-                        "SELECT sourcemap.main.sourcemap_version() AS version",
+                        "preview_example_tokens",
+                        "This worker ships a browsable example view of decoded source-map tokens. \
+                         How many token (mapping) rows does that built-in example contain? Return \
+                         the count as a single column named n.",
+                        "SELECT count(*) AS n FROM sourcemap.main.example_tokens",
                     ),
                 ]),
             ),
@@ -231,9 +226,9 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                     "The single schema for JavaScript Source Map v3 work: decoding a map's \
                      Base64-VLQ mappings into rows and resolving minified (line, col) positions \
                      back to original source locations. A map is supplied as a .map path, raw \
-                     JSON text, or BLOB. All line/column numbers are 0-indexed and position \
+                     JSON text, or `BLOB`. All line/column numbers are 0-indexed and position \
                      resolution is nearest-preceding, so an exact match is not required. Functions \
-                     are grouped into resolution, inspection, and diagnostics categories."
+                     are grouped into resolution and inspection categories."
                         .to_string(),
                 ),
                 (
@@ -247,7 +242,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                      position), so an exact match isn't required.\n- Per-row resolution is \
                      tolerant: a NULL, malformed, or empty map yields NULL rather than failing the \
                      query.\n\n## Categories\n\nFunctions are organized under the schema's \
-                     `vgi.categories`: **Resolution**, **Inspection**, and **Diagnostics**."
+                     `vgi.categories`: **Resolution** and **Inspection**."
                         .to_string(),
                 ),
                 // VGI413 category registry: the ordered set of categories every object's
@@ -261,151 +256,155 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                      original source locations, one frame or a whole column at a time.\"},\
                      {\"name\":\"Inspection\",\
                      \"description\":\"Decode a source map and inspect its contents — the decoded \
-                     mappings, original files, embedded source text, and map-level metadata.\"},\
-                     {\"name\":\"Diagnostics\",\
-                     \"description\":\"Operational utilities such as reporting the running worker \
-                     build.\"}\
+                     mappings, original files, embedded source text, and map-level metadata.\"}\
                      ]"
                         .to_string(),
                 ),
-                // VGI506 representative example queries (run against inline map text so they
-                // execute without a .map file present).
+                // VGI506/VGI515 representative example queries — a described-example
+                // JSON list (each carries a human-readable description). They run
+                // against inline map text so they execute without a .map file present,
+                // and project explicit columns (never a bare `SELECT *`).
                 (
                     "vgi.example_queries".to_string(),
-                    format!(
-                        "SELECT * FROM sourcemap.main.tokens('{m}');\n\
-                         SELECT sourcemap.main.lookup('{m}', 0, 0);\n\
-                         SELECT * FROM sourcemap.main.sources('{m}');\n\
-                         SELECT * FROM sourcemap.main.meta('{m}');\n\
-                         SELECT sourcemap.main.sourcemap_version();",
-                        m = SAMPLE_MAP
-                    ),
+                    crate::meta::example_queries_json(&[
+                        (
+                            "Decode a source map into its full token (mapping) table.",
+                            &format!(
+                                "SELECT gen_line, gen_col, source FROM sourcemap.main.tokens('{SAMPLE_MAP}')"
+                            ),
+                        ),
+                        (
+                            "Resolve a minified (line, col) position to its original source location.",
+                            &format!("SELECT sourcemap.main.lookup('{SAMPLE_MAP}', 0, 0)"),
+                        ),
+                        (
+                            "List the original source files a map references.",
+                            &format!(
+                                "SELECT src_id, source, has_content FROM sourcemap.main.sources('{SAMPLE_MAP}')"
+                            ),
+                        ),
+                        (
+                            "Read a map's version and mapping counts.",
+                            &format!(
+                                "SELECT version, n_sources, n_mappings FROM sourcemap.main.meta('{SAMPLE_MAP}')"
+                            ),
+                        ),
+                    ]),
                 ),
             ],
-            // A browsable, credential-free reference view (VGI146): it lets an
-            // agent SELECT the worker's own function surface — name, kind,
-            // category, return shape, and one-line purpose — before it has to
-            // construct a `map` argument for any function. Backed by a literal
-            // VALUES list so it scans instantly with no .map file or network.
+            // NOT a self-cataloguing function registry (VGI327): a browsable
+            // *data* view (VGI146). Selecting it decodes a tiny built-in sample
+            // map into its token rows, so an agent can `SELECT *` and see the exact
+            // shape `tokens(map)` produces — column names, types, 0-indexing — with
+            // no `.map` file, argument, or network. It is the worker's "here's what
+            // the output looks like" entry point.
             views: vec![CatView {
-                name: "functions".to_string(),
-                definition: "SELECT * FROM (VALUES \
-                    ('lookup', 'scalar', 'Resolution', \
-                     'STRUCT(source, src_line, src_col, name)', \
-                     'Resolve one minified (line, col) position against a map to its original \
-                      source location.'), \
-                    ('lookup_all', 'table', 'Resolution', \
-                     'id passthrough + (source, src_line, src_col, name)', \
-                     'Bulk-resolve a whole column of minified frames against one map, joining back \
-                      by a passthrough id.'), \
-                    ('tokens', 'table', 'Inspection', \
-                     '(gen_line, gen_col, src_id, source, src_line, src_col, name)', \
-                     'Explode a map into its full decoded token (mapping) table, one row per \
-                      Base64-VLQ segment.'), \
-                    ('sources', 'table', 'Inspection', '(src_id, source, has_content)', \
-                     'List a map''s original source files, with a flag for inline sourcesContent.'), \
-                    ('meta', 'table', 'Inspection', \
-                     '(version, file, source_root, n_sources, n_names, n_mappings)', \
-                     'Return one row of map-level metadata (version, file, source_root, and \
-                      counts).'), \
-                    ('source_content', 'scalar', 'Inspection', 'VARCHAR', \
-                     'Return one original source''s inline sourcesContent text, by its 0-based \
-                      src_id.'), \
-                    ('sourcemap_version', 'scalar', 'Diagnostics', 'VARCHAR', \
-                     'Report the running worker build version.') \
-                    ) AS t(function, kind, category, returns, summary)"
-                    .to_string(),
+                name: "example_tokens".to_string(),
+                definition: format!(
+                    "SELECT gen_line, gen_col, src_id, source, src_line, src_col, name \
+                     FROM sourcemap.main.tokens('{SAMPLE_MAP}')"
+                ),
                 comment: Some(
-                    "Browsable registry of the sourcemap worker's own functions — name, kind, \
-                     category, return shape, and purpose — so an agent can discover the surface \
-                     before calling anything."
+                    "A worked example: the decoded token (mapping) rows of a tiny built-in \
+                     sample source map, so you can see the shape of tokens(map) output without \
+                     supplying a map."
                         .to_string(),
                 ),
                 tags: vec![
                     (
                         "vgi.title".to_string(),
-                        "Sourcemap — Function Registry".to_string(),
+                        "Sourcemap — Example Decoded Tokens".to_string(),
                     ),
-                    ("vgi.category".to_string(), "Diagnostics".to_string()),
+                    ("vgi.category".to_string(), "Inspection".to_string()),
                     ("domain".to_string(), "web-observability".to_string()),
                     (
                         "vgi.keywords".to_string(),
                         crate::meta::keywords_json(
-                            "functions, registry, surface, catalog, reference, cheat sheet, \
-                             discover, lookup, lookup_all, tokens, sources, meta, source_content, \
-                             sourcemap_version, kind, category",
+                            "example, sample, demo, tokens, decoded mappings, output shape, \
+                             preview, getting started, gen_line, gen_col, source",
                         ),
                     ),
                     (
                         "vgi.doc_llm".to_string(),
-                        "A static lookup table of the sourcemap worker's own function surface, so \
-                         an agent can enumerate what the worker offers before constructing a `map` \
-                         argument. One row per function: `function` is the callable name (qualify \
-                         it as sourcemap.main.<function>), `kind` is 'scalar' or 'table' (table \
-                         covers table and table-in-out functions), `category` is one of \
-                         Resolution, Inspection, or Diagnostics, `returns` is the result shape, \
-                         and `summary` is a one-line purpose. Filter on kind or category to narrow \
-                         the surface — e.g. the Resolution functions de-minify positions, the \
-                         Inspection functions decode and inspect a map."
+                        "A zero-argument, browsable preview of the worker's output: the decoded \
+                         token rows of a tiny built-in sample Source Map v3. Select it to see \
+                         exactly what `tokens(map)` returns — the columns (gen_line, gen_col, \
+                         src_id, source, src_line, src_col, name), their types, and the 0-indexed \
+                         convention — before constructing a real `map` argument. It is a fixed \
+                         demo slice, not live data: to decode your own map, call \
+                         `tokens(<your map>)` with a .map path, raw JSON text, or map `BLOB` bytes."
                             .to_string(),
                     ),
                     (
                         "vgi.doc_md".to_string(),
-                        "# functions\n\nA browsable, credential-free registry of the `sourcemap` \
-                         worker's own function surface. Query it to discover what the worker \
-                         offers before constructing a `map` argument.\n\nEach row is one \
-                         function:\n\n- **function** — the callable name; qualify it as \
-                         `sourcemap.main.<function>`.\n- **kind** — `scalar` or `table` (table \
-                         covers both table and table-in-out functions).\n- **category** — one of \
-                         `Resolution`, `Inspection`, or `Diagnostics`.\n- **returns** — the result \
-                         shape.\n- **summary** — a one-line purpose.\n\nFilter `category = \
-                         'Resolution'` to list the de-minification entry points, or `kind = \
-                         'table'` to see the set-returning functions."
+                        "# example_tokens\n\nA browsable, credential-free **preview** of the \
+                         worker's output. Selecting it decodes a tiny built-in sample source map \
+                         into its token rows, so you can see the exact shape `tokens(map)` returns \
+                         — the columns, their types, and the 0-indexed convention — with no `.map` \
+                         file, argument, or network.\n\nColumns match `tokens(map)`: `gen_line`, \
+                         `gen_col`, `src_id`, `source`, `src_line`, `src_col`, `name`.\n\nThis is a \
+                         fixed demo slice. To decode your own map, call \
+                         `tokens(<your map>)` with a `.map` path, raw JSON text, or map `BLOB` \
+                         bytes."
                             .to_string(),
                     ),
                     (
                         "vgi.example_queries".to_string(),
-                        "[{\"description\":\"List the worker's de-minification (Resolution) \
-                         functions and how to call them.\",\"sql\":\"SELECT function, returns, \
-                         summary FROM sourcemap.main.functions WHERE category = 'Resolution' \
-                         ORDER BY function\"},\
-                         {\"description\":\"Count the worker's functions by kind (scalar vs \
-                         table).\",\"sql\":\"SELECT kind, count(*) AS n FROM \
-                         sourcemap.main.functions GROUP BY kind ORDER BY kind\"}]"
-                            .to_string(),
+                        crate::meta::example_queries_json(&[
+                            (
+                                "Preview the decoded token rows of the built-in sample map.",
+                                "SELECT gen_line, gen_col, source FROM sourcemap.main.example_tokens",
+                            ),
+                            (
+                                "Count how many decoded mappings the sample map contains.",
+                                "SELECT count(*) AS n FROM sourcemap.main.example_tokens",
+                            ),
+                        ]),
                     ),
                 ],
                 column_comments: vec![
                     (
-                        "function".to_string(),
-                        "The callable function name; qualify it as sourcemap.main.<function>."
+                        "gen_line".to_string(),
+                        "0-indexed generated (minified) line of this mapping.".to_string(),
+                    ),
+                    (
+                        "gen_col".to_string(),
+                        "0-indexed generated (minified) column of this mapping.".to_string(),
+                    ),
+                    (
+                        "src_id".to_string(),
+                        "0-based index into sources() of the original file, or NULL if the token \
+                         has no source."
                             .to_string(),
                     ),
                     (
-                        "kind".to_string(),
-                        "'scalar' or 'table' (table covers table and table-in-out functions)."
+                        "source".to_string(),
+                        "Original source file path this mapping points at, or NULL.".to_string(),
+                    ),
+                    (
+                        "src_line".to_string(),
+                        "0-indexed original source line number (0 = the first line), or NULL."
                             .to_string(),
                     ),
                     (
-                        "category".to_string(),
-                        "The function's category: Resolution, Inspection, or Diagnostics."
+                        "src_col".to_string(),
+                        "0-indexed original source column number (0 = the first column), or NULL."
                             .to_string(),
                     ),
                     (
-                        "returns".to_string(),
-                        "The result shape the function returns (STRUCT fields, table columns, or \
-                         a scalar type)."
-                            .to_string(),
-                    ),
-                    (
-                        "summary".to_string(),
-                        "A one-line description of what the function does.".to_string(),
+                        "name".to_string(),
+                        "Original symbol name for this mapping, or NULL if none.".to_string(),
                     ),
                 ],
             }],
             macros: Vec::new(),
             tables: Vec::new(),
         }],
+        // Publish the running build as the catalog's implementation_version (VGI328):
+        // an agent reads it from `vgi_catalogs()` without spending a query, and it can
+        // never drift from the binary — which is why there is no `sourcemap_version()`
+        // scalar.
+        implementation_version: Some(version().to_string()),
         ..Default::default()
     }
 }

@@ -75,7 +75,7 @@ impl TableFunction for Tokens {
             "Decode a Source Map v3 (.map) into its full token table: one row per Base64-VLQ \
              mapping, in generated order, with columns gen_line, gen_col, src_id, source, \
              src_line, src_col, name. The `map` argument is a path to a .map file, the raw map \
-             JSON text, or map BLOB bytes. Index maps (sections) are flattened first. All \
+             JSON text, or map `BLOB` bytes. Index maps (sections) are flattened first. All \
              line/column numbers are 0-indexed. Use it to inspect or join the raw mappings of a \
              source map.",
             "Explode a source map into its decoded token table (gen_line, gen_col, src_id, \
@@ -100,14 +100,21 @@ impl TableFunction for Tokens {
 ]"#
             .into(),
         ));
+        let example_sql = format!(
+            "SELECT gen_line, gen_col, source FROM sourcemap.main.tokens('{}');",
+            crate::SAMPLE_MAP
+        );
+        const EXAMPLE_DESC: &str = "Explode an inline source map into its decoded token rows.";
+        // VGI515: described-example carrier, byte-identical to the FunctionExample.
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&[(EXAMPLE_DESC, &example_sql)]),
+        ));
         FunctionMetadata {
             description: "Decode a source map into its full token (mapping) table".into(),
             examples: vec![FunctionExample {
-                sql: format!(
-                    "SELECT gen_line, gen_col, source FROM sourcemap.main.tokens('{}');",
-                    crate::SAMPLE_MAP
-                ),
-                description: "Explode an inline source map into its decoded token rows.".into(),
+                sql: example_sql,
+                description: EXAMPLE_DESC.into(),
                 expected_output: None,
             }],
             tags,

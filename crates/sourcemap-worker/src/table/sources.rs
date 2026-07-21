@@ -50,7 +50,7 @@ impl TableFunction for Sources {
             "List the original source files referenced by a Source Map v3 (.map): one row per \
              source with its 0-based src_id, the source path, and has_content (whether the map \
              embeds that source's text inline via sourcesContent). The `map` argument is a path \
-             to a .map file, the raw map JSON text, or map BLOB bytes. Use it to discover the \
+             to a .map file, the raw map JSON text, or map `BLOB` bytes. Use it to discover the \
              originals behind a bundle, then fetch embedded text with source_content(map, src_id).",
             "List a map's original sources (src_id, source, has_content).",
             "sources, source files, original files, sourcesContent, has_content, src_id, list \
@@ -68,15 +68,22 @@ impl TableFunction for Sources {
 ]"#
             .into(),
         ));
+        let example_sql = format!(
+            "SELECT src_id, source, has_content FROM sourcemap.main.sources('{}');",
+            crate::SAMPLE_MAP
+        );
+        const EXAMPLE_DESC: &str = "List the original source files referenced by an inline map.";
+        // VGI515: described-example carrier, byte-identical to the FunctionExample.
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&[(EXAMPLE_DESC, &example_sql)]),
+        ));
         FunctionMetadata {
             description: "List the original sources of a source map (with inline-content flag)"
                 .into(),
             examples: vec![FunctionExample {
-                sql: format!(
-                    "SELECT src_id, source, has_content FROM sourcemap.main.sources('{}');",
-                    crate::SAMPLE_MAP
-                ),
-                description: "List the original source files referenced by an inline map.".into(),
+                sql: example_sql,
+                description: EXAMPLE_DESC.into(),
                 expected_output: None,
             }],
             tags,

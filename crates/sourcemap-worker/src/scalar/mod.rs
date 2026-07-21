@@ -3,13 +3,11 @@
 
 mod lookup;
 mod source_content;
-mod version;
 
 use vgi::Worker;
 
 /// Register every scalar function on the worker.
 pub fn register(worker: &mut Worker) {
-    worker.register_scalar(version::SourcemapVersion);
     worker.register_scalar(lookup::Lookup);
     worker.register_scalar(source_content::SourceContent);
 }

@@ -125,13 +125,35 @@ path-mode tests resolve.
 Per-object discovery tags come from `meta::object_tags`; the catalog/schema
 metadata + `source_url` + agent-test tasks live in `main.rs`. Every example query,
 executable example, and agent task runs against **inline map text**, so they bind
-AND execute offline — the worker passes clean (0 findings at info, static score 100) at `vgi-lint --fail-on info`
+AND execute offline — the worker passes clean (0 findings at info, score 100) at `vgi-lint --fail-on info`
 (see `vgi-lint.toml`). Watch out for VGI313 (don't name a data type in an
 argument description) and VGI310 (don't type every argument `ANY` — the position
 args are `BIGINT`, only the genuinely-overloaded `map` is `ANY`).
 
+Rule notes worth keeping in mind:
+- **VGI515** — a described example (`{description, sql}`) is required per object.
+  A `FunctionExample`'s description is dropped by `duckdb_functions().examples`,
+  so each function ALSO emits a byte-identical `vgi.example_queries` tag
+  (`meta::example_queries_json`); the schema's `vgi.example_queries` is likewise a
+  described-JSON list, not a newline-joined SQL blob.
+- **VGI328** — no parameterless `*_version()` scalar. The build version is the
+  catalog's `implementation_version` (set in `catalog_metadata`, read from
+  `vgi_catalogs()`); `version()` in `main.rs` feeds it.
+- **VGI327** — no self-cataloguing `functions` registry view (it duplicates
+  `duckdb_functions()`).
+- **VGI146** — a worker with table functions still needs ONE browsable table/view,
+  so `example_tokens` (a data view decoding the built-in `SAMPLE_MAP` into token
+  rows) is that entry point. It is NOT a function registry (its columns are token
+  data, not name/kind/category), so it satisfies VGI146 without tripping VGI327.
+- **VGI182** — backtick DuckDB type names in prose docs (`BLOB`, `STRUCT(...)`).
+- **VGI131** — numeric column comments want a unit/definition hint (a `(`
+  parenthetical satisfies it); it checks table/view columns, not table-function
+  result columns.
+
 ## Function surface
 
 Scalars: `lookup` (→ STRUCT(source, src_line, src_col, name)), `source_content`
-(→ VARCHAR), `sourcemap_version` (→ VARCHAR). Table functions: `tokens`,
-`sources`, `meta`. Table-in-out: `lookup_all` (bulk, id passthrough).
+(→ VARCHAR). Table functions: `tokens`, `sources`, `meta`. Table-in-out:
+`lookup_all` (bulk, id passthrough). One browsable view: `example_tokens` (the
+decoded token rows of the built-in `SAMPLE_MAP`, for discovery). The running build
+is published as the catalog's `implementation_version`, not a scalar.

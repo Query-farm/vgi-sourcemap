@@ -24,31 +24,39 @@ impl ScalarFunction for SourceContent {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        const EXAMPLE_SQL: &str = "SELECT sourcemap.main.source_content('{\"version\":3,\
+             \"sources\":[\"a.js\"],\"sourcesContent\":[\"const x = 1;\"],\"names\":[],\
+             \"mappings\":\"AAAA\"}', 0);";
+        const EXAMPLE_DESC: &str = "Fetch the embedded original source text for source 0.";
+        let mut tags = crate::meta::object_tags(
+            "Inline Source Content",
+            "Return the embedded original source text (the map's `sourcesContent`) for one \
+             source, identified by its 0-based src_id (matching the sources() table). The \
+             `map` argument is a path to a .map file, the raw map JSON text, or map `BLOB` \
+             bytes. Returns NULL when the map embeds no content for that id, or when the map \
+             is NULL/malformed.",
+            "Return the inline `sourcesContent` for a source id, e.g. \
+             `source_content(read_text(map_path), 0)`. NULL when no inline content.",
+            "source content, sourcesContent, inline source, original source text, embedded \
+             source, src_id",
+            "Inspection",
+        );
+        // VGI515: described-example carrier, byte-identical to the FunctionExample.
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&[(EXAMPLE_DESC, EXAMPLE_SQL)]),
+        ));
         FunctionMetadata {
             description: "Return the inline sourcesContent of one original source (by src_id) \
                           embedded in the map, or NULL if absent"
                 .into(),
             return_type: Some(DataType::Utf8),
             examples: vec![FunctionExample {
-                sql: "SELECT sourcemap.main.source_content('{\"version\":3,\"sources\":[\"a.js\"],\
-                      \"sourcesContent\":[\"const x = 1;\"],\"names\":[],\"mappings\":\"AAAA\"}', 0);"
-                    .into(),
-                description: "Fetch the embedded original source text for source 0.".into(),
+                sql: EXAMPLE_SQL.into(),
+                description: EXAMPLE_DESC.into(),
                 expected_output: None,
             }],
-            tags: crate::meta::object_tags(
-                "Inline Source Content",
-                "Return the embedded original source text (the map's `sourcesContent`) for one \
-                 source, identified by its 0-based src_id (matching the sources() table). The \
-                 `map` argument is a path to a .map file, the raw map JSON text, or map BLOB \
-                 bytes. Returns NULL when the map embeds no content for that id, or when the map \
-                 is NULL/malformed.",
-                "Return the inline `sourcesContent` for a source id, e.g. \
-                 `source_content(read_text(map_path), 0)`. NULL when no inline content.",
-                "source content, sourcesContent, inline source, original source text, embedded \
-                 source, src_id",
-                "Inspection",
-            ),
+            tags,
             ..Default::default()
         }
     }
