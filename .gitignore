@@ -5,3 +5,6 @@
 
 # vgi-lint --ai review / simulate response caches (local, not committed).
 .vgi-*-cache.json
+
+# Browser build output (wasm/build.sh)
+/wasm/dist

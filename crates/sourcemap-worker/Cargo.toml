@@ -8,13 +8,15 @@ authors.workspace = true
 repository.workspace = true
 description = "VGI worker that decodes JavaScript Source Map v3 (.map) files and resolves minified positions back to original source locations in DuckDB over Apache Arrow"
 
+[lib]
+name = "sourcemap_worker"
+path = "src/lib.rs"
+
 [[bin]]
 name = "sourcemap-worker"
 path = "src/main.rs"
 
 [dependencies]
-vgi.workspace = true
-vgi-rpc.workspace = true
 arrow-array.workspace = true
 arrow-buffer.workspace = true
 arrow-schema.workspace = true
@@ -23,7 +25,22 @@ arrow-schema.workspace = true
 # nearest-preceding `lookup_token` binary search. We never reimplement any of it.
 sourcemap = "9"
 log = "0.4"
+
+# --- Native ---------------------------------------------------------------
+# The SDK's real default features (sqlite + transport-http) plus the HTTP RPC
+# transport and env_logger — unchanged from before the wasm split.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+vgi = { workspace = true, features = ["sqlite", "transport-http"] }
+vgi-rpc = { workspace = true, features = ["http"] }
 env_logger = "0.11"
+
+# --- wasm32 ---------------------------------------------------------------
+# No sqlite (C) and no HTTP transport (tokio/mio/axum); the bincode stream codec
+# is what the SAB byte-channel transport needs. env_logger is native-only (the
+# browser build logs via emscripten's stderr shim).
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+vgi = { workspace = true }
+vgi-rpc = { workspace = true, features = ["stream-codec"] }
 
 [dev-dependencies]
 # Property-based fuzzing that the decoder never panics on arbitrary/truncated input.
