@@ -1,0 +1,22 @@
+# Private graders for the agent-suitability suite (`vgi-lint simulate`).
+#
+# The prompts are published in the catalog vgi.agent_test_tasks tag
+# (crates/sourcemap-worker/src/lib.rs); the canonical answers live here,
+# keyed by task name, so the agent being graded never sees them (VGI416).
+# vgi-lint discovers this file in the directory it runs from.
+
+tasks:
+  - name: count_mappings
+    reference_sql: "SELECT count(*) AS n FROM sourcemap.main.tokens('{\"version\":3,\"sources\":[\"a.js\"],\"names\":[],\"mappings\":\"AAAA,CAAC\"}')"
+  - name: resolve_origin
+    reference_sql: "SELECT (sourcemap.main.lookup('{\"version\":3,\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}', 0, 0)).source AS source"
+  - name: count_sources
+    reference_sql: "SELECT n_sources FROM sourcemap.main.meta('{\"version\":3,\"sources\":[\"a.js\",\"b.js\"],\"names\":[],\"mappings\":\"AAAA\"}')"
+  - name: bulk_resolve_join
+    reference_sql: "SELECT r.id, r.source FROM sourcemap.main.lookup_all((SELECT * FROM (VALUES (1, 0, 0)) AS f(id, line, col)), map := '{\"version\":3,\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}', id := 'id') AS r"
+  - name: inline_source_text
+    reference_sql: "SELECT sourcemap.main.source_content('{\"version\":3,\"sources\":[\"a.js\"],\"sourcesContent\":[\"const x = 1;\"],\"names\":[],\"mappings\":\"AAAA\"}', 0) AS content"
+  - name: sources_with_inline_content
+    reference_sql: "SELECT count(*) FILTER (WHERE has_content) AS n FROM sourcemap.main.sources('{\"version\":3,\"sources\":[\"a.js\",\"b.js\"],\"sourcesContent\":[\"const x=1;\",null],\"names\":[],\"mappings\":\"AAAA\"}')"
+  - name: preview_example_tokens
+    reference_sql: "SELECT count(*) AS n FROM sourcemap.main.example_tokens"

@@ -122,6 +122,12 @@ struct SourcesProducer {
 }
 
 impl TableProducer for SourcesProducer {
+    /// The whole result is emitted as one batch, so there is no cursor to
+    /// resume: a re-created producer rebuilds that batch from the bind params.
+    fn resume_supported(&self) -> bool {
+        false
+    }
+
     fn next_batch(&mut self, _out: &mut OutputCollector) -> Result<Option<RecordBatch>> {
         let Some(rows) = self.rows.take() else {
             return Ok(None);

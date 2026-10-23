@@ -10,7 +10,7 @@ A [VGI](https://query.farm) worker (Rust, compiled binary) that decodes
 positions back to their original `source:line:col:name`, exposed to DuckDB/SQL
 over Arrow IPC (`ATTACH 'sourcemap' (TYPE vgi, LOCATION '…')`). Functions live
 under catalog `sourcemap`, schema `main`. Built on the published VGI Rust SDK
-(`vgi = "0.18.0"` from crates.io), arrow 59; modeled on `../vgi-units` and
+(`vgi = "0.46"` from crates.io), arrow 60; modeled on `../vgi-units` and
 `../vgi-fixedformat`. Builds standalone — no local SDK checkout.
 
 **Deliberately thin** (committee scope ≈ 1 week): the Sentry `sourcemap` crate
@@ -22,7 +22,7 @@ table-in-out plumbing.
 ## Layout
 
 ```
-Cargo.toml                                 workspace; pins vgi 0.18, arrow 59, sourcemap 9
+Cargo.toml                                 workspace; pins vgi 0.46, arrow 60, sourcemap 9
 crates/sourcemap-worker/
   src/main.rs                              Worker::new(); registers scalars/tables/table-in-out + catalog metadata
   src/lib.rs                               lib target re-exporting `smap` for integration tests

@@ -130,8 +130,6 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                          {\"version\":3,\"sources\":[\"a.js\"],\"names\":[],\"mappings\":\"AAAA,CAAC\"}. \
                          How many decoded mappings (tokens) does it contain? Return one column \
                          named n.",
-                        "SELECT count(*) AS n FROM sourcemap.main.tokens(\
-                         '{\"version\":3,\"sources\":[\"a.js\"],\"names\":[],\"mappings\":\"AAAA,CAAC\"}')",
                     ),
                     (
                         "resolve_origin",
@@ -139,17 +137,12 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                          {\"version\":3,\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}, \
                          resolve the minified position at generated line 0, column 0 and return \
                          the original source file as a single column named source.",
-                        "SELECT (sourcemap.main.lookup(\
-                         '{\"version\":3,\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}', \
-                         0, 0)).source AS source",
                     ),
                     (
                         "count_sources",
                         "How many original source files does this source map reference? Map JSON: \
                          {\"version\":3,\"sources\":[\"a.js\",\"b.js\"],\"names\":[],\"mappings\":\"AAAA\"}. \
                          Return one column named n_sources.",
-                        "SELECT n_sources FROM sourcemap.main.meta(\
-                         '{\"version\":3,\"sources\":[\"a.js\",\"b.js\"],\"names\":[],\"mappings\":\"AAAA\"}')",
                     ),
                     (
                         "bulk_resolve_join",
@@ -158,10 +151,6 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                          {\"version\":3,\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"} \
                          and return the id and the resolved original source, as columns id and \
                          source.",
-                        "SELECT r.id, r.source FROM sourcemap.main.lookup_all(\
-                         (SELECT * FROM (VALUES (1, 0, 0)) AS f(id, line, col)), \
-                         map := '{\"version\":3,\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}', \
-                         id := 'id') AS r",
                     ),
                     (
                         "inline_source_text",
@@ -170,9 +159,6 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                          {\"version\":3,\"sources\":[\"a.js\"],\"sourcesContent\":[\"const x = 1;\"],\
                          \"names\":[],\"mappings\":\"AAAA\"}, return the embedded original source \
                          text for source id 0 as a single column named content.",
-                        "SELECT sourcemap.main.source_content(\
-                         '{\"version\":3,\"sources\":[\"a.js\"],\"sourcesContent\":[\"const x = 1;\"],\
-                         \"names\":[],\"mappings\":\"AAAA\"}', 0) AS content",
                     ),
                     (
                         "sources_with_inline_content",
@@ -181,16 +167,12 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                          \"sourcesContent\":[\"const x=1;\",null],\"names\":[],\"mappings\":\"AAAA\"}, \
                          how many of its original source files embed inline text? Return the count \
                          as a single column named n.",
-                        "SELECT count(*) FILTER (WHERE has_content) AS n FROM sourcemap.main.sources(\
-                         '{\"version\":3,\"sources\":[\"a.js\",\"b.js\"],\
-                         \"sourcesContent\":[\"const x=1;\",null],\"names\":[],\"mappings\":\"AAAA\"}')",
                     ),
                     (
                         "preview_example_tokens",
                         "This worker ships a browsable example view of decoded source-map tokens. \
                          How many token (mapping) rows does that built-in example contain? Return \
                          the count as a single column named n.",
-                        "SELECT count(*) AS n FROM sourcemap.main.example_tokens",
                     ),
                 ]),
             ),
@@ -212,6 +194,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
         source_url: Some("https://github.com/Query-farm/vgi-sourcemap".to_string()),
         schemas: vec![CatSchema {
             name: "main".to_string(),
+            path: Vec::new(),
             comment: Some(
                 "Source Map v3 decoding and minified-position resolution functions.".to_string(),
             ),
