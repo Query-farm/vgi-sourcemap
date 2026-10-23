@@ -169,17 +169,17 @@ jobs:
           # Real, actionable vulnerabilities in our own deps still fail the job.
           ignore: RUSTSEC-2025-0141,RUSTSEC-2026-0173
 
-  # Verify the declared MSRV (rust-version = "1.90") actually builds — the other
+  # Verify the declared MSRV (rust-version = "1.97") actually builds — the other
   # jobs only use @stable, so a stable-only feature that silently raises the real
   # minimum would otherwise slip through.
   msrv:
-    name: MSRV check (rust 1.90)
+    name: MSRV check (rust 1.97)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
       - name: Install Rust toolchain (pinned MSRV)
-        uses: dtolnay/rust-toolchain@1.90
+        uses: dtolnay/rust-toolchain@1.97
 
       - uses: Swatinem/rust-cache@v2
         with:
