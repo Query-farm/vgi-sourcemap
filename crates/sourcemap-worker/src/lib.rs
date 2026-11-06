@@ -386,6 +386,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                         "Original symbol name for this mapping, or NULL if none.".to_string(),
                     ),
                 ],
+                ..Default::default()
             }],
             macros: Vec::new(),
             tables: Vec::new(),
