@@ -20,18 +20,42 @@ The heavy lifting (Base64-VLQ decode, index maps via `sections`, inline
 [`sourcemap`](https://crates.io/crates/sourcemap) crate (BSD-3-Clause); this
 worker is a thin Apache-Arrow adapter over it.
 
-## Install & attach
+## Quick start
 
-The worker is a standalone binary DuckDB launches and talks to over Arrow IPC.
+Every [GitHub release](https://github.com/Query-farm/vgi-sourcemap/releases) ships a prebuilt worker binary. The `vgi` extension downloads the one for your platform, checks its SHA-256 and caches it, so there is nothing to install besides DuckDB:
 
 ```sql
-INSTALL vgi FROM community; LOAD vgi;
-ATTACH 'sourcemap' (TYPE vgi, LOCATION '/path/to/sourcemap-worker');
-SET search_path = 'sourcemap.main';
+INSTALL vgi FROM community;
+LOAD vgi;
+
+ATTACH 'sourcemap' AS sourcemap (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-sourcemap@v0.2.0');
+
+-- Decode a source map into its full token (mapping) table.
+SELECT gen_line, gen_col, source FROM sourcemap.main.tokens('{"version":3,"file":"o.js","sources":["index.js"],"names":[],"mappings":"AAAA"}');
+
+-- Resolve a minified (line, col) position to its original source location.
+SELECT sourcemap.main.lookup('{"version":3,"file":"o.js","sources":["index.js"],"names":[],"mappings":"AAAA"}', 0, 0);
 ```
 
+To call the functions unqualified (as the reference below writes them), run `SET search_path = 'sourcemap.main';` after the `ATTACH`.
+
+Prebuilt binaries cover macOS (Apple silicon), Linux (x86-64 and arm64). `github-auto://` needs an explicit release tag; change `@v0.2.0` to move to a newer release.
+
+### Other ways to run it
+
+- **Docker** (the image bundles the worker; needs a container runtime):
+
+  ```sql
+  ATTACH 'sourcemap' AS sourcemap (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-sourcemap:0.2.0');
+  ```
+
+- **Manual download.** Download the archive for your platform from the [releases page](https://github.com/Query-farm/vgi-sourcemap/releases), verify it against its `.sha256` file (a cosign `.cosign.bundle` is published alongside), unpack it, and set `LOCATION` to the path of the extracted worker executable.
+
+### Build from source
+
 Build the binary with `cargo build --release` (it lands at
-`target/release/sourcemap-worker`).
+`target/release/sourcemap-worker`). For the full test and lint workflow, see
+[Development](#development).
 
 ## The `map` argument
 
