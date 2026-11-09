@@ -86,6 +86,7 @@ pub mod test_support {
         ProcessParams {
             substream_id: None,
             if_none_match: None,
+            transaction_opaque_data: None,
             if_modified_since: None,
             bind_output_schema: output_schema.clone(),
             current_pushdown_filters: None,
