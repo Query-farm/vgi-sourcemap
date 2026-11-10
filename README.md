@@ -39,7 +39,7 @@ SELECT sourcemap.main.lookup('{"version":3,"file":"o.js","sources":["index.js"],
 
 To call the functions unqualified (as the reference below writes them), run `SET search_path = 'sourcemap.main';` after the `ATTACH`.
 
-Prebuilt binaries cover macOS (Apple silicon), Linux (x86-64 and arm64). `github-auto://` needs an explicit release tag; change `@v0.2.0` to move to a newer release.
+Prebuilt binaries cover macOS (Apple silicon), Linux (x86-64 and arm64). `github-auto://` needs an explicit release tag; change `@v0.3.0` to move to a newer release.
 
 ### Other ways to run it
 
