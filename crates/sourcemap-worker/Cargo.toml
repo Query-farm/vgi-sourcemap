@@ -27,10 +27,13 @@ sourcemap = "9"
 log = "0.4"
 
 # --- Native ---------------------------------------------------------------
-# The SDK's real default features (sqlite + transport-http) plus the HTTP RPC
-# transport and env_logger — unchanged from before the wasm split.
+# The SDK's HTTP transport plus the HTTP RPC transport and env_logger. The SDK's
+# `sqlite` feature is deliberately NOT enabled: this worker keeps no state, so the
+# SDK's scratch store falls back to its filesystem backend, and the shipped binary
+# carries no bundled C SQLite (RUSTSEC-2026-0459 hits libsqlite3-sys 0.37, which
+# vgi 0.50's rusqlite 0.39 pins).
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-vgi = { workspace = true, features = ["sqlite", "transport-http"] }
+vgi = { workspace = true, features = ["transport-http"] }
 vgi-rpc = { workspace = true, features = ["http"] }
 env_logger = "0.11"
 

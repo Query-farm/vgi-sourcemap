@@ -65,9 +65,12 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 .to_string(),
         ),
         tags: vec![
+            ("vgi.title".to_string(), "Source Maps".to_string()),
             (
-                "vgi.title".to_string(),
-                "Source Map Decoder & Position Resolver".to_string(),
+                "vgi.subtitle".to_string(),
+                "Decode JavaScript source maps and resolve minified stack positions to \
+                 original source lines."
+                    .to_string(),
             ),
             (
                 "vgi.keywords".to_string(),
@@ -199,7 +202,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 "Source Map v3 decoding and minified-position resolution functions.".to_string(),
             ),
             tags: vec![
-                ("vgi.title".to_string(), "Sourcemap — main".to_string()),
+                ("vgi.title".to_string(), "Source map functions".to_string()),
                 (
                     "vgi.keywords".to_string(),
                     crate::meta::keywords_json(
@@ -303,7 +306,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 tags: vec![
                     (
                         "vgi.title".to_string(),
-                        "Sourcemap — Example Decoded Tokens".to_string(),
+                        "Example decoded tokens".to_string(),
                     ),
                     ("vgi.category".to_string(), "Inspection".to_string()),
                     ("domain".to_string(), "web-observability".to_string()),
