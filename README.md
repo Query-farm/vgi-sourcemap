@@ -28,7 +28,7 @@ Every [GitHub release](https://github.com/Query-farm/vgi-sourcemap/releases) shi
 INSTALL vgi FROM community;
 LOAD vgi;
 
-ATTACH 'sourcemap' AS sourcemap (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-sourcemap@v0.3.0');
+ATTACH 'sourcemap' AS sourcemap (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-sourcemap@v0.4.0');
 
 -- Decode a source map into its full token (mapping) table.
 SELECT gen_line, gen_col, source FROM sourcemap.main.tokens('{"version":3,"file":"o.js","sources":["index.js"],"names":[],"mappings":"AAAA"}');
@@ -39,14 +39,14 @@ SELECT sourcemap.main.lookup('{"version":3,"file":"o.js","sources":["index.js"],
 
 To call the functions unqualified (as the reference below writes them), run `SET search_path = 'sourcemap.main';` after the `ATTACH`.
 
-Prebuilt binaries cover macOS (Apple silicon), Linux (x86-64 and arm64). `github-auto://` needs an explicit release tag; change `@v0.3.0` to move to a newer release.
+Prebuilt binaries cover macOS (Apple silicon), Linux (x86-64 and arm64). `github-auto://` needs an explicit release tag; change `@v0.4.0` to move to a newer release.
 
 ### Other ways to run it
 
 - **Docker** (the image bundles the worker; needs a container runtime):
 
   ```sql
-  ATTACH 'sourcemap' AS sourcemap (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-sourcemap:0.3.0');
+  ATTACH 'sourcemap' AS sourcemap (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-sourcemap:0.4.0');
   ```
 
 - **Manual download.** Download the archive for your platform from the [releases page](https://github.com/Query-farm/vgi-sourcemap/releases), verify it against its `.sha256` file (a cosign `.cosign.bundle` is published alongside), unpack it, and set `LOCATION` to the path of the extracted worker executable.
