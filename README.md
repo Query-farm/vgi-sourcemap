@@ -176,3 +176,7 @@ See [`CLAUDE.md`](CLAUDE.md) for the build/layout notes and sharp edges.
 
 MIT — Copyright 2026 Query Farm LLC · https://query.farm. The bundled
 `sourcemap` crate is BSD-3-Clause.
+
+## Notebooks
+
+[Executed SQL walkthrough](notebooks/README.md): resolve synthetic stack frames, visualize mapping gaps, and keep raw source locations separate from a reporting policy.
