@@ -1,0 +1,43 @@
+{
+  "query": "SELECT * FROM duckdb_views() WHERE database_name='sourcemap' ORDER BY schema_name,view_name",
+  "columns": [
+    "database_name",
+    "database_oid",
+    "schema_name",
+    "schema_oid",
+    "view_name",
+    "view_oid",
+    "comment",
+    "tags",
+    "internal",
+    "temporary",
+    "column_count",
+    "sql",
+    "is_bound"
+  ],
+  "rows": [
+    [
+      "sourcemap",
+      22592,
+      "main",
+      22793,
+      "example_tokens",
+      22794,
+      "A worked example: the decoded token (mapping) rows of a tiny built-in sample source map, so you can see the shape of tokens(map) output without supplying a map.",
+      {
+        "domain": "web-observability",
+        "vgi.category": "Inspection",
+        "vgi.doc_llm": "A zero-argument, browsable preview of the worker's output: the decoded token rows of a tiny built-in sample Source Map v3. Select it to see exactly what `tokens(map)` returns \u2014 the columns (gen_line, gen_col, src_id, source, src_line, src_col, name), their types, and the 0-indexed convention \u2014 before constructing a real `map` argument. It is a fixed demo slice, not live data: to decode your own map, call `tokens(<your map>)` with a .map path, raw JSON text, or map `BLOB` bytes.",
+        "vgi.doc_md": "# example_tokens\n\nA browsable, credential-free **preview** of the worker's output. Selecting it decodes a tiny built-in sample source map into its token rows, so you can see the exact shape `tokens(map)` returns \u2014 the columns, their types, and the 0-indexed convention \u2014 with no `.map` file, argument, or network.\n\nColumns match `tokens(map)`: `gen_line`, `gen_col`, `src_id`, `source`, `src_line`, `src_col`, `name`.\n\nThis is a fixed demo slice. To decode your own map, call `tokens(<your map>)` with a `.map` path, raw JSON text, or map `BLOB` bytes.",
+        "vgi.example_queries": "[{\"description\":\"Preview the decoded token rows of the built-in sample map.\",\"sql\":\"SELECT gen_line, gen_col, source FROM sourcemap.main.example_tokens\"},{\"description\":\"Count how many decoded mappings the sample map contains.\",\"sql\":\"SELECT count(*) AS n FROM sourcemap.main.example_tokens\"}]",
+        "vgi.keywords": "[\"example\",\"sample\",\"demo\",\"tokens\",\"decoded mappings\",\"output shape\",\"preview\",\"getting started\",\"gen_line\",\"gen_col\",\"source\"]",
+        "vgi.title": "Example decoded tokens"
+      },
+      false,
+      false,
+      null,
+      "CREATE VIEW example_tokens AS SELECT gen_line, gen_col, src_id, \"source\", src_line, src_col, \"name\" FROM sourcemap.main.tokens('{\"version\":3,\"file\":\"o.js\",\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}');",
+      false
+    ]
+  ]
+}

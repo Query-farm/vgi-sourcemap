@@ -1,0 +1,16 @@
+{
+  "released_commit": "d32c5b0212703dfae22093bbced5ca849030fdb2",
+  "current_commit": "e40b090c0ff20069928c42e302e413456de97fd8",
+  "changed_runtime_paths": [
+    "crates/sourcemap-worker/src/examples.rs",
+    "crates/sourcemap-worker/src/lib.rs",
+    "crates/sourcemap-worker/src/maparg.rs",
+    "crates/sourcemap-worker/src/scalar/lookup.rs",
+    "crates/sourcemap-worker/src/scalar/source_content.rs",
+    "crates/sourcemap-worker/src/table/sources.rs",
+    "crates/sourcemap-worker/src/table/tokens.rs",
+    "crates/sourcemap-worker/src/table_in_out/lookup_all.rs"
+  ],
+  "review": "Eight changed files add composed examples and correct documentation of map arguments. Runtime decoding, map argument handling, lookup semantics, source content, output schemas and catalog registrations are unchanged. The new examples module supplies metadata and its own tests only. Both complete registrations and the full retained runtime diff were reviewed.",
+  "analytical_source_changes": false
+}

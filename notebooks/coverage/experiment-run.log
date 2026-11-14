@@ -1,0 +1,4 @@
+Running 01_a_resolved_frame_still_needs_context.ipynb ...
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+OK: 20 code cells, 2 charts, 13.2s
+Saved notebooks/artifacts/gap-10/01_a_resolved_frame_still_needs_context.ipynb

@@ -1,0 +1,15 @@
+{
+  "parameter": "MAX_COLUMN_GAP",
+  "default": 4,
+  "experiment": 10,
+  "unchanged_output_cells": [
+    "builtin-finding",
+    "2ad3b8f0",
+    "authored-tokens",
+    "e1dafec9",
+    "ea3ba3ef",
+    "5ca3b836",
+    "d4127b5d"
+  ],
+  "finding": "Included frames6 -> 8 of15; raw resolved stays12. F04 andF11 change category; source map, tokens, raw lookup and13SQL checks stay fixed. Both plots keep their axes."
+}

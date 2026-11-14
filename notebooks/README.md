@@ -1,49 +1,51 @@
-# VGI SourceMap notebooks
+# Source Maps
 
-[01 · A resolved frame still needs context](01_a_resolved_frame_still_needs_context.ipynb) decodes an authored source map, resolves synthetic stack frames in bulk, and separates raw nearest-preceding matches from an explicit reporting policy. Charts retain large gaps and reconcile all input frames.
+[01 · A resolved frame still needs context](01_a_resolved_frame_still_needs_context.ipynb)
+decodes an authored source map, resolves fifteen synthetic stack frames, and separates
+nearest-preceding matches from an explicit reporting policy. SVG charts retain large
+gaps and reconcile the full input population. The worker's built-in example introduces
+zero-based coordinates; wrapper metadata is checked against decoded map contents.
 
-## Run
-
-Install [uv](https://docs.astral.sh/uv/). From the repository root:
-
-```sh
-uv sync --project notebooks --frozen
-uv run --project notebooks --frozen python notebooks/execute.py
-```
-
-The complete `notebooks/` directory also runs separately from the worker checkout:
+Open the notebook's **Open in Colab** link, or run locally with [uv](https://docs.astral.sh/uv/):
 
 ```sh
 cd notebooks
-uv sync --frozen
-uv run --frozen python execute.py
+uv sync --locked
+uv run --locked vgi-notebooks
 ```
 
-Initial setup needs network access for the locked Python environment, VGI community extension and pinned worker release. Subsequent analysis reads only synthetic local files. No Rust toolchain, credentials, live telemetry or external dataset is required. Native release archives cover macOS Apple silicon, Linux x86-64/arm64 and Windows x86-64; this notebook was executed on macOS Apple silicon.
+A notebook downloaded on its own retrieves the verified authored fixture and plotting
+companion through the shared package. Colab installs only the base package and retains
+compatible preloaded libraries; the local lock includes the runner. Select
+`notebooks/.venv/bin/python` in a notebook editor. Restart and run all after editing.
 
-In VS Code select `notebooks/.venv/bin/python` and use `notebooks/` as the kernel working directory. Other Jupyter editors can register the environment:
+The visible connection pins the native worker release:
 
-```sh
-uv run --project notebooks --frozen python -m ipykernel install --user --name vgi-sourcemap-notebooks --display-name 'Python (vgi-sourcemap notebooks)'
+```sql
+INSTALL vgi FROM community;
+LOAD vgi;
+ATTACH 'sourcemap' (TYPE vgi,
+  LOCATION 'github-auto://Query-farm/vgi-sourcemap@v0.4.0');
 ```
 
-Restart and run all after editing parameters. Connection and analytical SQL remain expanded; setup, plotting, assertions and cleanup source are folded. Saved charts are embedded in the notebook.
+Initial setup needs network access; the analysis then uses synthetic local files.
+No worker source build, credentials or live telemetry is needed. Execution was tested
+on macOS arm64. A preloaded-kernel compatibility run checks the one-file bootstrap;
+hosted Colab itself was not manually executed. GitHub displays saved tables and SVGs.
 
 ## Experiment
 
 ```sh
-uv run --project notebooks --frozen python notebooks/execute.py \
-  --parameters '{"MAX_COLUMN_GAP":10}' \
-  --output-dir notebooks/validation/gap-10
+uv run --locked vgi-notebooks --parameters '{"MAX_COLUMN_GAP":10}' \
+  --output-dir artifacts/gap-10
 ```
 
-The default gap is four generated columns. Raising it to ten changes only the reporting policy; it does not improve the map or alter raw resolution. Reset the parameter to four for the saved default.
+Raising the gap from four to ten includes eight rather than six of fifteen frames.
+Raw resolved frames stay at twelve; F04 and F11 alone change policy category.
+The map, decoded tokens and raw results remain fixed. The separate output directory
+preserves the saved default, and both chart axes retain their default scale.
 
-The runner requires a separate output directory for overrides, rejects unknown parameter names, and saves only successful executions. Failed runs leave prior saved notebooks untouched. Experiment copies include relative assets, fixture, runner and environment files. Validation logs, extracted charts and experiment copies are ignored by Git.
-
-## Portable startup and fixture provenance
-
-The visible literal `ATTACH` location is `github-auto://Query-farm/vgi-sourcemap@v0.4.0`. VGI downloads the platform archive, checks its checksum and caches it. Haybarn is pinned to 2.0.0rc11 in the isolated notebook lock. To upgrade, change the release tag explicitly and rerun both settings.
+## Authored fixture
 
 `fixtures/app.min.js.map` is authored Source Map v3 JSON with five mapping tokens. Its exact Base64-VLQ mapping string is `EAAAA,QACEC,YCDFC;IACEC,cDCAC`. The decoded zero-based coordinates are checked against independent SQL values:
 
@@ -65,6 +67,13 @@ The illustrative reporting policy requires a source, the same generated line, an
 
 Per-row scalar lookup tolerates malformed/missing maps and returns NULL, as it also does before the first token. Whole-map functions such as `tokens()` surface map errors instead. Other maps can contain tokens with no source information; every token in this fixture has a source. Original content can be absent in real maps and must not be invented. The worker does not retrieve map URLs.
 
-Validation covers both parameter settings, execution from a detached notebook directory, four rendered charts, twelve SQL checks plus chart reconciliation, and three runner guards. The default run took 7.8 seconds; the detached ten-column experiment took 4.1 seconds and includes 8 rather than 6 of 15 frames. Raw resolved frames stay at 12; F04 and F11 alone change policy category. Source validation passed 23 Rust tests, 65 stdio / 71 HTTP / 65 Unix SQL assertions (three cases each), Clippy, rustfmt, warning-clean rustdoc, locked release build, and the configured cargo-audit gate. Metadata scored 100/100 L2 with zero findings. Notebook execution uses the release; source validation builds only the worker and preserves source, tests, fixtures and Cargo files.
+The notebook meaningfully demonstrates all **7/7 public SQL surfaces** in native
+v0.4.0. Current source has the same interface, established by a retained registration
+and metadata/documentation-only diff review; execution used the release. Catalogs,
+reviewed mappings and successful execution receipts live in [coverage.json](coverage.json)
+and [coverage/](coverage/). Thirteen SQL checks and two chart population checks protect
+the interpretation. Defaults, the parameter experiment, portable setup and figures
+are verified before publication.
 
-Official Query.Farm Strata Sun and VGI artwork is copied unchanged from the approved assets, with Query.Farm branding at the top and bottom.
+The shared [notebook standard](https://github.com/Query-farm/vgi-example-notebooks/blob/main/docs/standard.md)
+owns setup, execution, branding and SVG publication.

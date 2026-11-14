@@ -1,0 +1,297 @@
+{
+  "schema_version": 1,
+  "catalogs": {
+    "released": {
+      "path": "coverage/catalog-release.json",
+      "sha256": "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1",
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T19:47:52.280023+00:00",
+        "catalog_sha256": "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1",
+        "notes": "Actual native v0.4.0 complete worker-filtered function/table/view exports contain seven logical public names: six functions and one example-data view. No physical tables, authenticated APIs or write APIs are omitted."
+      }
+    },
+    "current": {
+      "path": "coverage/catalog-current.json",
+      "sha256": "e86c3801372d8cb1e0d2b00c6e361d2431851d8db5232c5278dcc5ee6970996c",
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T19:47:52.280023+00:00",
+        "catalog_sha256": "e86c3801372d8cb1e0d2b00c6e361d2431851d8db5232c5278dcc5ee6970996c",
+        "notes": "Complete registration and the retained eight-file release-to-current diff at e40b090c0ff20069928c42e302e413456de97fd8 establish the same seven names. Changes add composed examples and correct documentation of map arguments; runtime decoding, map handling, schemas, registration and lookup semantics are unchanged. Current coverage is reviewed compatibility, not current-main execution."
+      }
+    }
+  },
+  "notebooks": [
+    {
+      "path": "01_a_resolved_frame_still_needs_context.ipynb",
+      "sha256": "825197cead71c2fab6ebfd62838aa19fa7cc013f7802d9752026adf44963ba44",
+      "execution": {
+        "path": "coverage/run-01.json",
+        "sha256": "3b27ee337515d9e499e51d309a39ff6a3ced2ce3cfe2d10cd182f58bc38e18a5"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "object": {
+        "schema": "main",
+        "name": "example_tokens"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "sql": [
+        {
+          "cell": "builtin-tokens",
+          "reference": "sourcemap.main.example_tokens"
+        }
+      ],
+      "narrative_cells": [
+        "builtin-story"
+      ],
+      "result_cells": [
+        "builtin-finding"
+      ],
+      "interpretation_cells": [
+        "builtin-finding"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T19:47:52.280023+00:00",
+        "notebook_sha256": "825197cead71c2fab6ebfd62838aa19fa7cc013f7802d9752026adf44963ba44",
+        "catalog_sha256": [
+          "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1",
+          "e86c3801372d8cb1e0d2b00c6e361d2431851d8db5232c5278dcc5ee6970996c"
+        ],
+        "purpose": "Inspect actual zero-based generated and original coordinates before normalizing the separate frame fixture.",
+        "finding": "The builtin reference map starts at generated (0,0) and original (0,0), exposing the coordinate convention. Its single token belongs to the worker example, explicitly separate from the authored five-token map used downstream."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "meta"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "sql": [
+        {
+          "cell": "2ad3b8f0",
+          "reference": "sourcemap.main.meta"
+        }
+      ],
+      "narrative_cells": [
+        "f4204c15",
+        "metadata-finding"
+      ],
+      "result_cells": [
+        "2ad3b8f0",
+        "d4127b5d"
+      ],
+      "interpretation_cells": [
+        "metadata-finding",
+        "d4127b5d"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T19:47:52.280023+00:00",
+        "notebook_sha256": "825197cead71c2fab6ebfd62838aa19fa7cc013f7802d9752026adf44963ba44",
+        "catalog_sha256": [
+          "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1",
+          "e86c3801372d8cb1e0d2b00c6e361d2431851d8db5232c5278dcc5ee6970996c"
+        ],
+        "purpose": "Reconcile wrapper metadata with decoded map populations before interpreting stack frames.",
+        "finding": "The authored v3 map labels app.min.js, root /src, two sources, five names and five mappings. Source/mapping counts match the decoded tables. The file field is a label, not a checksum proving deployment identity."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "tokens"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "sql": [
+        {
+          "cell": "2ad3b8f0",
+          "reference": "sourcemap.main.tokens"
+        }
+      ],
+      "narrative_cells": [
+        "f4204c15",
+        "2aebab82"
+      ],
+      "result_cells": [
+        "authored-tokens",
+        "11f279c6",
+        "9dd473a1",
+        "d4127b5d"
+      ],
+      "interpretation_cells": [
+        "9dd473a1",
+        "3e74ae0d"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T19:47:52.280023+00:00",
+        "notebook_sha256": "825197cead71c2fab6ebfd62838aa19fa7cc013f7802d9752026adf44963ba44",
+        "catalog_sha256": [
+          "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1",
+          "e86c3801372d8cb1e0d2b00c6e361d2431851d8db5232c5278dcc5ee6970996c"
+        ],
+        "purpose": "Expose exact decoded coordinates, then audit nearest-preceding matches and generated-column distances.",
+        "finding": "Five authored token positions match independent SQL values. Ten same-line frames span gaps0\u201378; two other resolved frames select earlier-line tokens. The SQL precedence audit agrees with real bulk resolution. Gaps are generated-coordinate distances, not accuracy or confidence."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "sources"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "sql": [
+        {
+          "cell": "2ad3b8f0",
+          "reference": "sourcemap.main.sources"
+        }
+      ],
+      "narrative_cells": [
+        "f4204c15",
+        "ca917e20"
+      ],
+      "result_cells": [
+        "587f16af",
+        "d4127b5d"
+      ],
+      "interpretation_cells": [
+        "ca917e20",
+        "d4127b5d"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T19:47:52.280023+00:00",
+        "notebook_sha256": "825197cead71c2fab6ebfd62838aa19fa7cc013f7802d9752026adf44963ba44",
+        "catalog_sha256": [
+          "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1",
+          "e86c3801372d8cb1e0d2b00c6e361d2431851d8db5232c5278dcc5ee6970996c"
+        ],
+        "purpose": "Keep source IDs and embedded-content availability while attaching original source lines to selected frames.",
+        "finding": "Both authored sources have embedded content, joined by their resolved /src paths. The two-file population agrees with metadata. Six default selected frames display original lines; a real map may omit sourcesContent and that absence must remain visible."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "lookup_all"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "sql": [
+        {
+          "cell": "ea3ba3ef",
+          "reference": "sourcemap.main.lookup_all"
+        }
+      ],
+      "narrative_cells": [
+        "ac4b6e25",
+        "2aebab82",
+        "b8abe3de"
+      ],
+      "result_cells": [
+        "ea3ba3ef",
+        "11f279c6",
+        "3e74ae0d"
+      ],
+      "interpretation_cells": [
+        "3e74ae0d",
+        "43eb08fb"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T19:47:52.280023+00:00",
+        "notebook_sha256": "825197cead71c2fab6ebfd62838aa19fa7cc013f7802d9752026adf44963ba44",
+        "catalog_sha256": [
+          "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1",
+          "e86c3801372d8cb1e0d2b00c6e361d2431851d8db5232c5278dcc5ee6970996c"
+        ],
+        "purpose": "Resolve valid frames in bulk, preserve IDs and separate raw resolution from a configurable reporting screen.",
+        "finding": "All15 input frames survive the left join;12 resolve. At gap4 the reporting screen includes6; gap10 includes8, changing only F04 and F11. Cross-line, unresolved and invalid categories remain explicit. Stored original positions are not interpolated and a closer gap does not prove the right map."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "source_content"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "sql": [
+        {
+          "cell": "587f16af",
+          "reference": "sourcemap.main.source_content"
+        }
+      ],
+      "narrative_cells": [
+        "ca917e20"
+      ],
+      "result_cells": [
+        "587f16af",
+        "d4127b5d"
+      ],
+      "interpretation_cells": [
+        "ca917e20",
+        "d4127b5d"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T19:47:52.280023+00:00",
+        "notebook_sha256": "825197cead71c2fab6ebfd62838aa19fa7cc013f7802d9752026adf44963ba44",
+        "catalog_sha256": [
+          "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1",
+          "e86c3801372d8cb1e0d2b00c6e361d2431851d8db5232c5278dcc5ee6970996c"
+        ],
+        "purpose": "Recover the actual embedded source line for each selected frame without inventing missing code.",
+        "finding": "Source text is fetched using source IDs and indexed with the stored zero-based source line plus one for SQL list access. Both embedded files are present; included frames display validate/submit/price/round context according to the actual token. The notebook does not execute those snippets."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "lookup"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "sql": [
+        {
+          "cell": "5ca3b836",
+          "reference": "sourcemap.main.lookup"
+        }
+      ],
+      "narrative_cells": [
+        "51707c0a"
+      ],
+      "result_cells": [
+        "5ca3b836",
+        "d4127b5d"
+      ],
+      "interpretation_cells": [
+        "51707c0a",
+        "d4127b5d"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T19:47:52.280023+00:00",
+        "notebook_sha256": "825197cead71c2fab6ebfd62838aa19fa7cc013f7802d9752026adf44963ba44",
+        "catalog_sha256": [
+          "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1",
+          "e86c3801372d8cb1e0d2b00c6e361d2431851d8db5232c5278dcc5ee6970996c"
+        ],
+        "purpose": "Distinguish three concrete causes that a tolerant per-row resolver represents identically as NULL.",
+        "finding": "Malformed inline JSON, a missing map and a position before the first mapping each produce a displayed NULL resolution. Input/map provenance is needed to explain the outcome; a NULL alone does not classify the cause. Whole-map functions intentionally have stricter error behavior."
+      }
+    }
+  ]
+}

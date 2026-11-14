@@ -1,0 +1,523 @@
+{
+  "schema_version": 1,
+  "status": "met",
+  "meets_target": true,
+  "catalogs": {
+    "released": {
+      "catalog_status": "verified",
+      "revision": "v0.4.0",
+      "catalog_sha256": "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1",
+      "collection_reconciled": true,
+      "denominator": 7,
+      "observed_objects": 7,
+      "required": 7,
+      "verified_count": 7,
+      "candidate_count": 0,
+      "fraction": 1.0,
+      "meets_target": true,
+      "exact_runtime_count": 7,
+      "runtime_revisions": [
+        "v0.4.0"
+      ],
+      "covered": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "example_tokens"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "lookup"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "lookup_all"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "meta"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "source_content"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "sources"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "tokens"
+        }
+      ],
+      "uncovered": [],
+      "objects": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "example_tokens",
+          "kinds": [
+            "table"
+          ],
+          "signatures": [
+            "VIEW"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "lookup",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "lookup(ANY, BIGINT, BIGINT) -> STRUCT(\"source\" VARCHAR, src_line BIGINT, src_col BIGINT, \"name\" VARCHAR)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "lookup_all",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "lookup_all(TABLE, VARCHAR, VARCHAR, VARCHAR, ANY) -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "meta",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "meta(ANY) -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "source_content",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "source_content(ANY, BIGINT) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "sources",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "sources(ANY) -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "tokens",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "tokens(ANY) -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        }
+      ],
+      "issues": []
+    },
+    "current": {
+      "catalog_status": "verified",
+      "revision": "e40b090c0ff20069928c42e302e413456de97fd8",
+      "catalog_sha256": "e86c3801372d8cb1e0d2b00c6e361d2431851d8db5232c5278dcc5ee6970996c",
+      "collection_reconciled": false,
+      "denominator": 7,
+      "observed_objects": 7,
+      "required": 7,
+      "verified_count": 7,
+      "candidate_count": 0,
+      "fraction": 1.0,
+      "meets_target": true,
+      "exact_runtime_count": 0,
+      "runtime_revisions": [
+        "v0.4.0"
+      ],
+      "covered": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "example_tokens"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "lookup"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "lookup_all"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "meta"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "source_content"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "sources"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "tokens"
+        }
+      ],
+      "uncovered": [],
+      "objects": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "example_tokens",
+          "kinds": [
+            "table"
+          ],
+          "signatures": [
+            "VIEW"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "lookup",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "lookup(ANY, BIGINT, BIGINT) -> STRUCT(\"source\" VARCHAR, src_line BIGINT, src_col BIGINT, \"name\" VARCHAR)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "lookup_all",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "lookup_all(TABLE, VARCHAR, VARCHAR, VARCHAR, ANY) -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "meta",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "meta(ANY) -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "source_content",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "source_content(ANY, BIGINT) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "sources",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "sources(ANY) -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "tokens",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "tokens(ANY) -> None"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        }
+      ],
+      "issues": []
+    }
+  },
+  "interface_drift": {
+    "known": true,
+    "current_only": [],
+    "released_only": [],
+    "changed": []
+  },
+  "notebooks": {
+    "01_a_resolved_frame_still_needs_context.ipynb": {
+      "verified": true,
+      "issues": []
+    }
+  },
+  "examples": [
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "example_tokens"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "meta"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "tokens"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "sources"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "lookup_all"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "source_content"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "lookup"
+      },
+      "notebook": "01_a_resolved_frame_still_needs_context.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "3e070debb2bb8877a38f17450200e869d6f99ec14a9d4caf6b655ac53af50be1"
+    }
+  ],
+  "issues": []
+}

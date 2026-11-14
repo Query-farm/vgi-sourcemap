@@ -1,0 +1,261 @@
+{
+  "query": "SELECT * FROM duckdb_functions() WHERE database_name='sourcemap' ORDER BY schema_name,function_name",
+  "columns": [
+    "database_name",
+    "database_oid",
+    "schema_name",
+    "function_name",
+    "alias_of",
+    "function_type",
+    "description",
+    "comment",
+    "tags",
+    "return_type",
+    "parameters",
+    "parameter_types",
+    "varargs",
+    "macro_definition",
+    "has_side_effects",
+    "internal",
+    "extension_name",
+    "function_oid",
+    "examples",
+    "stability",
+    "categories"
+  ],
+  "rows": [
+    [
+      "sourcemap",
+      "22592",
+      "main",
+      "lookup",
+      null,
+      "scalar",
+      "Resolve a minified (gen_line, gen_col) position to its original STRUCT(source, src_line, src_col, name) using nearest-preceding source-map semantics; NULL if the map is missing/malformed or the position precedes the first mapping",
+      null,
+      {
+        "vgi.category": "Resolution",
+        "vgi.doc_llm": "Resolve one minified (generated) line/column position back to its original source location using nearest-preceding source-map semantics. Returns a `STRUCT(source VARCHAR, src_line BIGINT, src_col BIGINT, name VARCHAR)`. The `map` argument is a path to a .map file, the raw map JSON text, or map `BLOB` bytes. All line/column numbers are 0-indexed. Returns NULL when the map is NULL, malformed, or empty, when a position is NULL, or when the position precedes the first mapping. Use it to de-minify a single error frame.",
+        "vgi.doc_md": "Resolve a minified `(gen_line, gen_col)` to its original `STRUCT(source, src_line, src_col, name)`, e.g. `lookup(read_text(map_path), line, col)`. Nearest-preceding; 0-indexed; NULL on no match.",
+        "vgi.example_queries": "[{\"description\":\"Resolve a generated line/column back to its original location.\",\"sql\":\"SELECT sourcemap.main.lookup('{\\\"version\\\":3,\\\"sources\\\":[\\\"index.js\\\"],\\\"names\\\":[],\\\"mappings\\\":\\\"AAAA\\\"}', 0, 0);\"}]",
+        "vgi.keywords": "[\"lookup\",\"resolve\",\"de-minify\",\"deminify\",\"source map\",\"original position\",\"stack frame\",\"symbolicate\",\"line column\",\"nearest preceding\",\"RUM\",\"error tracking\"]",
+        "vgi.title": "Resolve Minified Position"
+      },
+      "STRUCT(\"source\" VARCHAR, src_line BIGINT, src_col BIGINT, \"name\" VARCHAR)",
+      [
+        "map",
+        "gen_line",
+        "gen_col"
+      ],
+      [
+        "ANY",
+        "BIGINT",
+        "BIGINT"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22596,
+      [
+        "SELECT sourcemap.main.lookup('{\"version\":3,\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}', 0, 0);"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "sourcemap",
+      "22592",
+      "main",
+      "lookup_all",
+      null,
+      "table",
+      "Bulk-resolve a column of minified frames against one map (id passthrough)",
+      null,
+      {
+        "vgi.category": "Resolution",
+        "vgi.doc_llm": "Resolve a whole column of minified (line, col) error frames against ONE source map, returning the original (source, src_line, src_col, name) for each \u2014 with the input id column passed through so the result joins back to the originating row. The input relation is supplied as a subquery (e.g. `(SELECT id, line, col FROM frames)`); the single map is the named `map :=` argument (a .map path, raw JSON text, or `BLOB`). Name the id/line/col columns with `id :=` / `line :=` / `col :=` (defaults 'id', 'line', 'col'). Positions are 0-indexed; resolution is nearest-preceding. A malformed map, NULL position, or no-match yields NULL resolution columns for that row (the id still passes through). This is the bulk de-minify entry point for RUM / error-tracking frames.",
+        "vgi.doc_md": "Bulk-resolve a column of minified `(line, col)` frames against one map, with `id` passthrough: `lookup_all((SELECT id, line, col FROM frames), map := \u2026, id := 'id')`. Emits `(id, source, src_line, src_col, name)`.",
+        "vgi.example_queries": "[{\"description\":\"Resolve a column of frames against one inline map, joining back by id.\",\"sql\":\"SELECT r.id, r.source, r.src_line FROM sourcemap.main.lookup_all((SELECT * FROM (VALUES (1, 0, 0)) AS f(id, line, col)), map := '{\\\"version\\\":3,\\\"file\\\":\\\"o.js\\\",\\\"sources\\\":[\\\"index.js\\\"],\\\"names\\\":[],\\\"mappings\\\":\\\"AAAA\\\"}', id := 'id') AS r\"}]",
+        "vgi.executable_examples": "[{\"description\":\"Resolve a column of frames against one inline map, joining back by id.\",\"sql\":\"SELECT r.id, r.source, r.src_line FROM sourcemap.main.lookup_all((SELECT * FROM (VALUES (1, 0, 0)) AS f(id, line, col)), map := '{\\\"version\\\":3,\\\"file\\\":\\\"o.js\\\",\\\"sources\\\":[\\\"index.js\\\"],\\\"names\\\":[],\\\"mappings\\\":\\\"AAAA\\\"}', id := 'id') AS r\"}]",
+        "vgi.keywords": "[\"lookup_all\",\"bulk resolve\",\"de-minify\",\"deminify\",\"error frames\",\"RUM\",\"error tracking\",\"stack frames\",\"id passthrough\",\"symbolicate\",\"table function\",\"resolve column\"]",
+        "vgi.result_dynamic_columns_md": "The first output column is the **passthrough id** \u2014 it takes the exact name and type of the input `id` column (whatever you named via `id :=`), so results join back to the originating row. It is followed by four fixed resolution columns. For an input relation whose id column is a `BIGINT` named `id`, the result columns are:\n\n| Name | Type | Description |\n|---|---|---|\n| `id` | BIGINT | Passthrough of the input id column (same name and type as the input). |\n| `source` | VARCHAR | Original source file, or NULL when the frame does not resolve. |\n| `src_line` | BIGINT | 0-indexed original line, or NULL when unresolved. |\n| `src_col` | BIGINT | 0-indexed original column, or NULL when unresolved. |\n| `name` | VARCHAR | Original symbol name, or NULL if the mapping carries none. |",
+        "vgi.title": "Bulk Resolve Minified Frames"
+      },
+      null,
+      [
+        "frames",
+        "line",
+        "col",
+        "id",
+        "map"
+      ],
+      [
+        "TABLE",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "ANY"
+      ],
+      null,
+      null,
+      null,
+      true,
+      null,
+      22598,
+      [],
+      null,
+      []
+    ],
+    [
+      "sourcemap",
+      "22592",
+      "main",
+      "meta",
+      null,
+      "table",
+      "Return one row of source-map metadata (version, file, counts)",
+      null,
+      {
+        "vgi.category": "Inspection",
+        "vgi.doc_llm": "Return one row of metadata about a Source Map v3 (.map): version, file (the generated file it describes), source_root, n_sources, n_names, and n_mappings (the decoded token count after flattening any sections). The `map` argument is a path to a .map file, the raw map JSON text, or map `BLOB` bytes. Use it to size or sanity-check a map before decoding it in full.",
+        "vgi.doc_md": "Get one row of map-level metadata (version, file, source_root, n_sources, n_names, n_mappings).",
+        "vgi.example_queries": "[{\"description\":\"Read version, source count, and mapping count from an inline map.\",\"sql\":\"SELECT version, n_sources, n_mappings FROM sourcemap.main.meta('{\\\"version\\\":3,\\\"file\\\":\\\"o.js\\\",\\\"sources\\\":[\\\"index.js\\\"],\\\"names\\\":[],\\\"mappings\\\":\\\"AAAA\\\"}');\"}]",
+        "vgi.keywords": "[\"meta\",\"metadata\",\"source map version\",\"file\",\"sourceRoot\",\"source_root\",\"counts\",\"n_sources\",\"n_mappings\",\"summary\"]",
+        "vgi.result_columns_schema": "[\n  {\"name\": \"version\", \"type\": \"BIGINT\", \"description\": \"Source Map spec version (always 3).\"},\n  {\"name\": \"file\", \"type\": \"VARCHAR\", \"description\": \"The generated (minified) file the map describes, or NULL if unset.\"},\n  {\"name\": \"source_root\", \"type\": \"VARCHAR\", \"description\": \"The map's sourceRoot prefix, or NULL if unset.\"},\n  {\"name\": \"n_sources\", \"type\": \"BIGINT\", \"description\": \"Number of original source files the map references.\"},\n  {\"name\": \"n_names\", \"type\": \"BIGINT\", \"description\": \"Number of original symbol names the map carries.\"},\n  {\"name\": \"n_mappings\", \"type\": \"BIGINT\", \"description\": \"Number of decoded tokens (after flattening any index-map sections).\"}\n]",
+        "vgi.title": "Source Map Metadata"
+      },
+      null,
+      [
+        "map"
+      ],
+      [
+        "ANY"
+      ],
+      null,
+      null,
+      null,
+      true,
+      null,
+      22599,
+      [
+        "SELECT version, n_sources, n_mappings FROM sourcemap.main.meta('{\"version\":3,\"file\":\"o.js\",\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}');"
+      ],
+      null,
+      []
+    ],
+    [
+      "sourcemap",
+      "22592",
+      "main",
+      "source_content",
+      null,
+      "scalar",
+      "Return the inline sourcesContent of one original source (by src_id) embedded in the map, or NULL if absent",
+      null,
+      {
+        "vgi.category": "Inspection",
+        "vgi.doc_llm": "Return the embedded original source text (the map's `sourcesContent`) for one source, identified by its 0-based src_id (matching the sources() table). The `map` argument is a path to a .map file, the raw map JSON text, or map `BLOB` bytes. Returns NULL when the map embeds no content for that id, or when the map is NULL/malformed.",
+        "vgi.doc_md": "Return the inline `sourcesContent` for a source id, e.g. `source_content(read_text(map_path), 0)`. NULL when no inline content.",
+        "vgi.example_queries": "[{\"description\":\"Fetch the embedded original source text for source 0.\",\"sql\":\"SELECT sourcemap.main.source_content('{\\\"version\\\":3,\\\"sources\\\":[\\\"a.js\\\"],\\\"sourcesContent\\\":[\\\"const x = 1;\\\"],\\\"names\\\":[],\\\"mappings\\\":\\\"AAAA\\\"}', 0);\"}]",
+        "vgi.keywords": "[\"source content\",\"sourcesContent\",\"inline source\",\"original source text\",\"embedded source\",\"src_id\"]",
+        "vgi.title": "Inline Source Content"
+      },
+      "VARCHAR",
+      [
+        "map",
+        "src_id"
+      ],
+      [
+        "ANY",
+        "BIGINT"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22597,
+      [
+        "SELECT sourcemap.main.source_content('{\"version\":3,\"sources\":[\"a.js\"],\"sourcesContent\":[\"const x = 1;\"],\"names\":[],\"mappings\":\"AAAA\"}', 0);"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "sourcemap",
+      "22592",
+      "main",
+      "sources",
+      null,
+      "table",
+      "List the original sources of a source map (with inline-content flag)",
+      null,
+      {
+        "vgi.category": "Inspection",
+        "vgi.doc_llm": "List the original source files referenced by a Source Map v3 (.map): one row per source with its 0-based src_id, the source path, and has_content (whether the map embeds that source's text inline via sourcesContent). The `map` argument is a path to a .map file, the raw map JSON text, or map `BLOB` bytes. Use it to discover the originals behind a bundle, then fetch embedded text with source_content(map, src_id).",
+        "vgi.doc_md": "List a map's original sources (src_id, source, has_content).",
+        "vgi.example_queries": "[{\"description\":\"List the original source files referenced by an inline map.\",\"sql\":\"SELECT src_id, source, has_content FROM sourcemap.main.sources('{\\\"version\\\":3,\\\"file\\\":\\\"o.js\\\",\\\"sources\\\":[\\\"index.js\\\"],\\\"names\\\":[],\\\"mappings\\\":\\\"AAAA\\\"}');\"}]",
+        "vgi.keywords": "[\"sources\",\"source files\",\"original files\",\"sourcesContent\",\"has_content\",\"src_id\",\"list sources\",\"bundle inputs\"]",
+        "vgi.result_columns_schema": "[\n  {\"name\": \"src_id\", \"type\": \"BIGINT\", \"description\": \"0-based source index (feed it to source_content(map, src_id) to fetch this file's embedded text).\"},\n  {\"name\": \"source\", \"type\": \"VARCHAR\", \"description\": \"Original source file path, with the map's sourceRoot already joined on.\"},\n  {\"name\": \"has_content\", \"type\": \"BOOLEAN\", \"description\": \"Whether the map embeds this source's text inline via sourcesContent.\"}\n]",
+        "vgi.title": "List Source Map Sources"
+      },
+      null,
+      [
+        "map"
+      ],
+      [
+        "ANY"
+      ],
+      null,
+      null,
+      null,
+      true,
+      null,
+      22600,
+      [
+        "SELECT src_id, source, has_content FROM sourcemap.main.sources('{\"version\":3,\"file\":\"o.js\",\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}');"
+      ],
+      null,
+      []
+    ],
+    [
+      "sourcemap",
+      "22592",
+      "main",
+      "tokens",
+      null,
+      "table",
+      "Decode a source map into its full token (mapping) table",
+      null,
+      {
+        "vgi.category": "Inspection",
+        "vgi.doc_llm": "Decode a Source Map v3 (.map) into its full token table: one row per Base64-VLQ mapping, in generated order, with columns gen_line, gen_col, src_id, source, src_line, src_col, name. The `map` argument is a path to a .map file, the raw map JSON text, or map `BLOB` bytes. Index maps (sections) are flattened first. All line/column numbers are 0-indexed. Use it to inspect or join the raw mappings of a source map.",
+        "vgi.doc_md": "Explode a source map into its decoded token table (gen_line, gen_col, src_id, source, src_line, src_col, name).",
+        "vgi.example_queries": "[{\"description\":\"Explode an inline source map into its decoded token rows.\",\"sql\":\"SELECT gen_line, gen_col, source FROM sourcemap.main.tokens('{\\\"version\\\":3,\\\"file\\\":\\\"o.js\\\",\\\"sources\\\":[\\\"index.js\\\"],\\\"names\\\":[],\\\"mappings\\\":\\\"AAAA\\\"}');\"}]",
+        "vgi.keywords": "[\"tokens\",\"mappings\",\"decode source map\",\"VLQ\",\"segments\",\"gen_line\",\"gen_col\",\"source map table\",\"explode mappings\"]",
+        "vgi.result_columns_schema": "[\n  {\"name\": \"gen_line\", \"type\": \"BIGINT\", \"description\": \"0-indexed generated (minified) line of this mapping.\"},\n  {\"name\": \"gen_col\", \"type\": \"BIGINT\", \"description\": \"0-indexed generated (minified) column of this mapping.\"},\n  {\"name\": \"src_id\", \"type\": \"BIGINT\", \"description\": \"0-based index into sources() of the original file, or NULL if the token has no source.\"},\n  {\"name\": \"source\", \"type\": \"VARCHAR\", \"description\": \"Original source file path this mapping points at, or NULL.\"},\n  {\"name\": \"src_line\", \"type\": \"BIGINT\", \"description\": \"0-indexed original source line, or NULL.\"},\n  {\"name\": \"src_col\", \"type\": \"BIGINT\", \"description\": \"0-indexed original source column, or NULL.\"},\n  {\"name\": \"name\", \"type\": \"VARCHAR\", \"description\": \"Original symbol name for this mapping, or NULL if none.\"}\n]",
+        "vgi.title": "Decode Source Map Tokens"
+      },
+      null,
+      [
+        "map"
+      ],
+      [
+        "ANY"
+      ],
+      null,
+      null,
+      null,
+      true,
+      null,
+      22601,
+      [
+        "SELECT gen_line, gen_col, source FROM sourcemap.main.tokens('{\"version\":3,\"file\":\"o.js\",\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}');"
+      ],
+      null,
+      []
+    ]
+  ]
+}
