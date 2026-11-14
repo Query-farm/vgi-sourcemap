@@ -128,6 +128,18 @@ SELECT sourcemap.main.source_content('/dist/app.min.js.map', 0);
 
 -- Size / sanity-check a map before decoding it in full.
 SELECT * FROM sourcemap.main.meta('/dist/app.min.js.map');
+
+-- Show the original line of code each error frame lands on: resolve with
+-- lookup_all, join sources() for the src_id, read it from source_content().
+SELECT r.id, r.source, r.src_line + 1 AS orig_line, r.name,
+       trim(string_split(sourcemap.main.source_content('/dist/app.min.js.map', s.src_id),
+                         chr(10))[r.src_line + 1]) AS code
+FROM sourcemap.main.lookup_all(
+       (SELECT id, gen_line AS line, gen_col AS col FROM errors),
+       map := '/dist/app.min.js.map',
+       id := 'id') AS r
+JOIN sourcemap.main.sources('/dist/app.min.js.map') AS s ON s.source = r.source
+ORDER BY r.id;
 ```
 
 Passing the map as inline JSON text works identically (handy when the map bodies

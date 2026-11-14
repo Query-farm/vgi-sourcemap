@@ -16,7 +16,7 @@
 //! SET search_path = 'sourcemap.main';
 //!
 //! SELECT * FROM tokens('/dist/app.min.js.map');                 -- decode mappings
-//! SELECT lookup(read_text('app.min.js.map'), 0, 12);            -- resolve one frame
+//! SELECT lookup('/dist/app.min.js.map', 0, 12);                -- resolve one frame
 //! SELECT * FROM sources('/dist/app.min.js.map');                -- original files
 //! SELECT * FROM meta('/dist/app.min.js.map');                   -- map metadata
 //! ```
@@ -27,6 +27,7 @@
 
 mod arrow_io;
 mod cache;
+mod examples;
 mod maparg;
 mod meta;
 mod scalar;
@@ -57,6 +58,47 @@ const SAMPLE_MAP: &str =
 /// from the registered scalars / table / table-in-out functions; this only adds
 /// catalog/schema-level comments and tags.
 fn catalog_metadata(name: &str) -> CatalogModel {
+    // Composed agent task: its prompt embeds the composed-example map text.
+    let frames_per_file_prompt = format!(
+        "Five minified error frames (id, generated line, generated column; all 0-indexed) were \
+         reported: (1, 0, 5), (2, 0, 30), (3, 1, 20), (4, 0, 40), (5, 1, 2). Using the source map \
+         JSON {}, count how many of these frames resolve into each original source file the map \
+         lists, including files no frame resolves to (count 0). Return columns source and \
+         n_frames (a BIGINT count), one row per original source file, ordered by source.",
+        examples::COMPOSE_MAP
+    );
+    let mut schema_examples: Vec<(&str, String)> = vec![
+        (
+            "Decode a source map into its full token (mapping) table.",
+            format!("SELECT gen_line, gen_col, source FROM sourcemap.main.tokens('{SAMPLE_MAP}')"),
+        ),
+        (
+            "Resolve a minified (line, col) position to its original source location.",
+            format!("SELECT sourcemap.main.lookup('{SAMPLE_MAP}', 0, 0)"),
+        ),
+        (
+            "List the original source files a map references.",
+            format!(
+                "SELECT src_id, source, has_content FROM sourcemap.main.sources('{SAMPLE_MAP}')"
+            ),
+        ),
+        (
+            "Read a map's version and mapping counts.",
+            format!(
+                "SELECT version, n_sources, n_mappings FROM sourcemap.main.meta('{SAMPLE_MAP}')"
+            ),
+        ),
+    ];
+    // Composed examples (several of the worker's objects in one query).
+    schema_examples.extend(
+        examples::COMPOSED
+            .iter()
+            .map(|(d, q)| (*d, (*q).to_string())),
+    );
+    let schema_examples: Vec<(&str, &str)> = schema_examples
+        .iter()
+        .map(|(d, q)| (*d, q.as_str()))
+        .collect();
     CatalogModel {
         name: name.to_string(),
         comment: Some(
@@ -110,7 +152,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                  (Base64-VLQ decode, index maps via `sections`, inline `sourcesContent`, the \
                  nearest-preceding lookup) is done by the Sentry `sourcemap` crate; this worker is \
                  a thin Arrow adapter over it. A map is supplied as a **path** to a `.map` file, \
-                 the raw map **JSON text** (e.g. from `read_text(...)`), or map `BLOB` bytes — \
+                 the raw map **JSON text** (e.g. `(SELECT content FROM read_text(...))`), or map `BLOB` bytes — \
                  so data-URI inline maps decode via the text/bytes mode.\n\n## Semantics\n\n- All \
                  line/column numbers are **0-indexed** (Source Map v3); browser stack frames are \
                  usually 1-indexed, so subtract one before resolving.\n- Position resolution is \
@@ -177,6 +219,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                          How many token (mapping) rows does that built-in example contain? Return \
                          the count as a single column named n.",
                     ),
+                    ("frames_per_source_file", &frames_per_file_prompt),
                 ]),
             ),
             ("vgi.author".to_string(), "Query.Farm".to_string()),
@@ -259,30 +302,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 // and project explicit columns (never a bare `SELECT *`).
                 (
                     "vgi.example_queries".to_string(),
-                    crate::meta::example_queries_json(&[
-                        (
-                            "Decode a source map into its full token (mapping) table.",
-                            &format!(
-                                "SELECT gen_line, gen_col, source FROM sourcemap.main.tokens('{SAMPLE_MAP}')"
-                            ),
-                        ),
-                        (
-                            "Resolve a minified (line, col) position to its original source location.",
-                            &format!("SELECT sourcemap.main.lookup('{SAMPLE_MAP}', 0, 0)"),
-                        ),
-                        (
-                            "List the original source files a map references.",
-                            &format!(
-                                "SELECT src_id, source, has_content FROM sourcemap.main.sources('{SAMPLE_MAP}')"
-                            ),
-                        ),
-                        (
-                            "Read a map's version and mapping counts.",
-                            &format!(
-                                "SELECT version, n_sources, n_mappings FROM sourcemap.main.meta('{SAMPLE_MAP}')"
-                            ),
-                        ),
-                    ]),
+                    crate::meta::example_queries_json(&schema_examples),
                 ),
             ],
             // NOT a self-cataloguing function registry (VGI327): a browsable

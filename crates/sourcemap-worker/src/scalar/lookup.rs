@@ -5,7 +5,7 @@
 //! source-map lookup), so an exact mapping for the position isn't required — that
 //! is how real stack frames resolve. `map` is the overloaded path/text/bytes
 //! argument (see [`crate::maparg`]); it is read per row, so it may be a literal,
-//! a constant, or a column like `read_text(e.map_path)`.
+//! a constant, or a column of map paths or map bodies.
 //!
 //! Per-row safety: a NULL / malformed / empty map, a NULL position, or a
 //! position that precedes the first mapping all yield a **NULL struct** for that
@@ -84,7 +84,7 @@ impl ScalarFunction for Lookup {
              mapping. Use it to de-minify a single error frame.",
             "Resolve a minified `(gen_line, gen_col)` to its original \
              `STRUCT(source, src_line, src_col, name)`, e.g. \
-             `lookup(read_text(map_path), line, col)`. Nearest-preceding; 0-indexed; NULL on \
+             `lookup('/dist/app.min.js.map', line, col)`. Nearest-preceding; 0-indexed; NULL on \
              no match.",
             "lookup, resolve, de-minify, deminify, source map, original position, stack frame, \
              symbolicate, line column, nearest preceding, RUM, error tracking",
@@ -118,9 +118,9 @@ impl ScalarFunction for Lookup {
             ArgSpec::any_column(
                 "map",
                 0,
-                "The source map: a path to a .map file, the raw map JSON text (e.g. from \
-                 read_text(...)), or the map bytes. Read per row, so it may vary per row \
-                 (e.g. read_text(e.map_path)).",
+                "The source map: a path to a .map file, the raw map JSON text, or the map bytes. \
+                 Read per row, so it may vary per row (e.g. a column of map paths or map \
+                 bodies).",
             ),
             ArgSpec::column_typed(
                 "gen_line",

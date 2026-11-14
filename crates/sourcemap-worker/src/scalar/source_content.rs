@@ -36,7 +36,7 @@ impl ScalarFunction for SourceContent {
              bytes. Returns NULL when the map embeds no content for that id, or when the map \
              is NULL/malformed.",
             "Return the inline `sourcesContent` for a source id, e.g. \
-             `source_content(read_text(map_path), 0)`. NULL when no inline content.",
+             `source_content('/dist/app.min.js.map', 0)`. NULL when no inline content.",
             "source content, sourcesContent, inline source, original source text, embedded \
              source, src_id",
             "Inspection",

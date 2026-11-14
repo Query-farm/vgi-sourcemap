@@ -76,16 +76,29 @@ impl TableFunction for Sources {
         // VGI515: described-example carrier, byte-identical to the FunctionExample.
         tags.push((
             "vgi.example_queries".into(),
-            crate::meta::example_queries_json(&[(EXAMPLE_DESC, &example_sql)]),
+            crate::meta::example_queries_json(&[
+                (EXAMPLE_DESC, &example_sql),
+                (
+                    crate::examples::SOURCES_WITH_CONTENT_DESC,
+                    crate::examples::SOURCES_WITH_CONTENT_SQL,
+                ),
+            ]),
         ));
         FunctionMetadata {
             description: "List the original sources of a source map (with inline-content flag)"
                 .into(),
-            examples: vec![FunctionExample {
-                sql: example_sql,
-                description: EXAMPLE_DESC.into(),
-                expected_output: None,
-            }],
+            examples: vec![
+                FunctionExample {
+                    sql: example_sql,
+                    description: EXAMPLE_DESC.into(),
+                    expected_output: None,
+                },
+                FunctionExample {
+                    sql: crate::examples::SOURCES_WITH_CONTENT_SQL.into(),
+                    description: crate::examples::SOURCES_WITH_CONTENT_DESC.into(),
+                    expected_output: None,
+                },
+            ],
             tags,
             ..Default::default()
         }

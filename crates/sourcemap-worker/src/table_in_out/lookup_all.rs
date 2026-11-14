@@ -95,13 +95,25 @@ impl TableInOutFunction for LookupAll {
         const EXAMPLE_SQL: &str = "SELECT r.id, r.source, r.src_line FROM sourcemap.main.lookup_all((SELECT * FROM (VALUES (1, 0, 0)) AS f(id, line, col)), map := '{\"version\":3,\"file\":\"o.js\",\"sources\":[\"index.js\"],\"names\":[],\"mappings\":\"AAAA\"}', id := 'id') AS r";
         tags.push((
             "vgi.executable_examples".into(),
-            crate::meta::example_queries_json(&[(EXAMPLE_DESC, EXAMPLE_SQL)]),
+            crate::meta::example_queries_json(&[
+                (EXAMPLE_DESC, EXAMPLE_SQL),
+                (
+                    crate::examples::FRAMES_WITH_CODE_DESC,
+                    crate::examples::FRAMES_WITH_CODE_SQL,
+                ),
+            ]),
         ));
         // VGI515: also surface the described example via the standard
         // `vgi.example_queries` carrier, byte-identical to the executable example.
         tags.push((
             "vgi.example_queries".into(),
-            crate::meta::example_queries_json(&[(EXAMPLE_DESC, EXAMPLE_SQL)]),
+            crate::meta::example_queries_json(&[
+                (EXAMPLE_DESC, EXAMPLE_SQL),
+                (
+                    crate::examples::FRAMES_WITH_CODE_DESC,
+                    crate::examples::FRAMES_WITH_CODE_SQL,
+                ),
+            ]),
         ));
         FunctionMetadata {
             description:

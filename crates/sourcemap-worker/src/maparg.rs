@@ -4,7 +4,7 @@
 //! argument that is one of:
 //!
 //! - a **path** (`VARCHAR`) to a `.map` file on the worker's filesystem,
-//! - the raw map **text** (`VARCHAR` JSON, e.g. from `read_text(...)` or a
+//! - the raw map **text** (`VARCHAR` JSON, e.g. a `content` column from `read_text(...)` or a
 //!   `data:` URI's payload), or
 //! - the map **bytes** (`BLOB`).
 //!
@@ -13,7 +13,7 @@
 //! `{`; otherwise it is read as a filesystem path. `BLOB` is always used
 //! verbatim. This mirrors how the headline queries pass either a literal path
 //! (`tokens('/dist/app.min.js.map')`) or fetched text
-//! (`lookup(read_text(e.map_path), …)`).
+//! (`lookup(e.map_json, …)`).
 
 use arrow_array::cast::AsArray;
 use arrow_array::{Array, ArrayRef};

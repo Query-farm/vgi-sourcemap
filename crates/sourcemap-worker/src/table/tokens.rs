@@ -108,15 +108,28 @@ impl TableFunction for Tokens {
         // VGI515: described-example carrier, byte-identical to the FunctionExample.
         tags.push((
             "vgi.example_queries".into(),
-            crate::meta::example_queries_json(&[(EXAMPLE_DESC, &example_sql)]),
+            crate::meta::example_queries_json(&[
+                (EXAMPLE_DESC, &example_sql),
+                (
+                    crate::examples::MAPPINGS_PER_SOURCE_DESC,
+                    crate::examples::MAPPINGS_PER_SOURCE_SQL,
+                ),
+            ]),
         ));
         FunctionMetadata {
             description: "Decode a source map into its full token (mapping) table".into(),
-            examples: vec![FunctionExample {
-                sql: example_sql,
-                description: EXAMPLE_DESC.into(),
-                expected_output: None,
-            }],
+            examples: vec![
+                FunctionExample {
+                    sql: example_sql,
+                    description: EXAMPLE_DESC.into(),
+                    expected_output: None,
+                },
+                FunctionExample {
+                    sql: crate::examples::MAPPINGS_PER_SOURCE_SQL.into(),
+                    description: crate::examples::MAPPINGS_PER_SOURCE_DESC.into(),
+                    expected_output: None,
+                },
+            ],
             tags,
             ..Default::default()
         }
