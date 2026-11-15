@@ -1916,7 +1916,7 @@ dependencies = [
 
 [[package]]
 name = "sourcemap-wasm"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "sourcemap-worker",
  "vgi",
@@ -1924,7 +1924,7 @@ dependencies = [
 
 [[package]]
 name = "sourcemap-worker"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "arrow-array",
  "arrow-buffer",

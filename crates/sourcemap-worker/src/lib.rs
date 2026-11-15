@@ -163,7 +163,13 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                  to use\n\nReach for it whenever you have minified positions (deployed bundle \
                  line/column) and the corresponding source map, and you want the original file, \
                  line, column, and symbol name back — one frame at a time or a whole error table \
-                 at once."
+                 at once.\n\n## Sources and references\n\n\
+                 - [ECMA-426 Source map format specification](https://tc39.es/ecma426/) — the \
+                 standardized Source Map v3 format (`mappings`, `sources`, `names`, index-map \
+                 `sections`) this worker decodes.\n\
+                 - [Sentry `sourcemap` crate](https://github.com/getsentry/rust-sourcemap) \
+                 ([API docs](https://docs.rs/sourcemap)) — the decoder and lookup engine the \
+                 worker wraps."
                     .to_string(),
             ),
             (
