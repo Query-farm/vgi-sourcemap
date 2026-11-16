@@ -38,7 +38,7 @@ crates/sourcemap-worker/
   tests/fuzz.rs                            proptest: the decoder NEVER panics on arbitrary/truncated input
 data/*.map                                 golden fixtures: basic, index (sections), inline sourcesContent, webpack-style
 test/sql/*.test                            haybarn sqllogictest E2E (authoritative)
-ci/                                        run-integration.sh + preprocess-require.awk + check-version.sh
+ci/                                        run-integration.sh + check-version.sh
 ```
 
 Pattern: keep decoding in `smap.rs` (pure, unit-tested), keep Arrow marshalling
@@ -108,9 +108,8 @@ separately.
 cargo test --workspace --all-features    # smap unit + golden fixtures + proptest fuzz + arrow-boundary
 cargo clippy --all-targets --all-features -- -D warnings && cargo fmt --all -- --check
 RUSTDOCFLAGS="-D warnings" cargo doc --no-deps --workspace
-# E2E (subprocess|http|unix), needs haybarn-unittest + community vgi extension:
-HAYBARN_UNITTEST="$(command -v haybarn-unittest)" \
-  WORKER_BIN="$PWD/target/release/sourcemap-worker" TRANSPORT=subprocess ci/run-integration.sh
+# E2E over stdio, launch and http (installs haybarn-unittest into .tools):
+make test-sql
 ```
 
 `test/sql/*.test` use `LOAD vgi;` (not `require vgi`) + `require-env

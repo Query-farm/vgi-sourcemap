@@ -165,9 +165,8 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo fmt --all -- --check
 cargo build --release
 
-# End-to-end SQLLogic suite (needs haybarn-unittest + the community vgi extension):
-HAYBARN_UNITTEST="$(command -v haybarn-unittest)" \
-  WORKER_BIN="$PWD/target/release/sourcemap-worker" ci/run-integration.sh
+# End-to-end SQLLogic suite over stdio, launch and http:
+make test-sql
 ```
 
 See [`CLAUDE.md`](CLAUDE.md) for the build/layout notes and sharp edges.

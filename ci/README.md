@@ -1,31 +1,29 @@
-# ci/ — integration test harness
+# ci/ — integration harness
 
-`run-integration.sh` runs this repo's sqllogictest suite (`test/sql/*.test`)
-against the built `sourcemap-worker` over the VGI protocol, using a prebuilt
-standalone `haybarn-unittest` and the **signed community `vgi` extension** — no
-DuckDB C++ build from source.
+| file | purpose |
+| --- | --- |
+| `run-integration.sh` | Run `test/sql/*.test` through the published `haybarn-unittest` with the signed community `vgi` extension, over one `TRANSPORT` (`stdio` \| `launch` \| `http`). Sets `VGI_SOURCEMAP_WORKER` (the ATTACH `LOCATION`) per transport. Adapted from the vgi-starters harness. |
+| `check-version.sh` | Assert the `[workspace.package]` version equals a release tag before publishing. |
 
-It is parameterized by `TRANSPORT` (`subprocess` | `http` | `unix`), exercising
-the SAME suite over each transport the vgi extension supports; only the
-`LOCATION` the `.test` files `ATTACH` (`VGI_SOURCEMAP_WORKER`) changes. The
-fixture maps in `data/` are staged next to the runner so the path-mode tests
-(`tokens('data/basic.js.map')`) resolve.
+## Run locally
 
-`preprocess-require.awk` rewrites `require <ext>` / `LOAD vgi;` lines into
-explicit signed `INSTALL … ; LOAD … ;` so the standalone runner (which links no
-extensions) can load `vgi` from the community channel — and, on the `http` leg,
-`httpfs` from core (the vgi extension's HTTP client needs it; a missing httpfs
-otherwise *silently auto-skips* the suite).
-
-`check-version.sh <tag>` asserts the `[workspace.package]` version in
-`Cargo.toml` matches a release tag; the release workflow runs it before
-publishing.
-
-Local one-liner (subprocess):
-
-```sh
-cargo build --release
-HAYBARN_UNITTEST="$(command -v haybarn-unittest)" \
-  WORKER_BIN="$PWD/target/release/sourcemap-worker" \
-  ci/run-integration.sh
+```bash
+make test-sql                       # build, install haybarn-unittest into .tools, run stdio + launch + http
+make test-sql TRANSPORTS=launch     # one transport
+TEST_PATTERN=test/sql/<file>.test make test-sql TRANSPORTS=stdio   # one file
 ```
+
+Transports: `stdio` — DuckDB spawns the worker per connection; `launch` —
+DuckDB starts the worker once on a unix socket (`LOCATION 'launch:/path'`) and
+pools connections; `http` — the worker runs `--http --port 0` and prints
+`PORT:<n>`.
+
+The script stages the tests, rewrites `require vgi` into `LOAD vgi` and loads
+`httpfs` on the http transport. It runs with a config that turns off the
+runner's error-to-skip rule, and fails on any skip not listed in
+`EXPECTED_SKIP_REASONS` and when fewer than `MIN_EXECUTED` files ran. A broken
+lane therefore cannot pass as all skips.
+
+The Docker image test (`.github/workflows/docker-publish.yml`) reuses the script
+with a preset LOCATION (`docker run -i … stdio` with `TRANSPORT=stdio`, or the
+container's `http://` URL with `TRANSPORT=http`).
