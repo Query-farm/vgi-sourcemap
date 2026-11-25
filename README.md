@@ -46,7 +46,7 @@ Prebuilt binaries cover macOS (Apple silicon), Linux (x86-64 and arm64). `github
 - **Docker** (the image bundles the worker; needs a container runtime):
 
   ```sql
-  ATTACH 'sourcemap' AS sourcemap (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-sourcemap:0.5.0');
+  ATTACH 'sourcemap' AS sourcemap (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-sourcemap:0.5.1');
   ```
 
 - **Manual download.** Download the archive for your platform from the [releases page](https://github.com/Query-farm/vgi-sourcemap/releases), verify it against its `.sha256` file (a cosign `.cosign.bundle` is published alongside), unpack it, and set `LOCATION` to the path of the extracted worker executable.
