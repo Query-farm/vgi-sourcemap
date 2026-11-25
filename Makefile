@@ -1,7 +1,7 @@
 # vgi-sourcemap worker — common tasks. `make help` lists them.
 # Requires Rust (rustup) and uv (https://docs.astral.sh/uv/).
 
-HAYBARN_VERSION  ?= 2.0.0rc11
+HAYBARN_VERSION  ?= 2.0.1rc3
 BIN              := sourcemap-worker
 WORKER           := $(CURDIR)/target/release/$(BIN)
 TOOLS            := $(CURDIR)/.tools
